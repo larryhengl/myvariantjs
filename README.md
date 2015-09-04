@@ -27,10 +27,10 @@
 
 <br>
 ## Demo App
-You can clone and start a basic demo app locally.  Repo is [here](https://github.com/larryhengl/myvariantjs-demo).
 
-Todo: host a project page for this.
+You can view a basic web app [demo](http://larryhengl.github.io/myvariantjs-demo/) which uses the myvariantjs lib.
 
+You can also clone and start the demo app locally.  Repo is [here](https://github.com/larryhengl/myvariantjs-demo).
 
 <br>
 ## Intro
