@@ -24,6 +24,14 @@
     </td>
 </table>
 
+
+<br>
+## Demo App
+You can clone and start a basic demo app locally.  Repo is [here](https://github.com/larryhengl/myvariantjs-demo).
+
+Todo: host a project page for this.
+
+
 <br>
 ## Intro
 
@@ -38,7 +46,7 @@
 ## Installation
 
 ```
-npm install myvariant.js --save
+npm install myvariantjs --save
 ```
 
 <br>
@@ -119,7 +127,7 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 <br>
 ## Release History
 
-* 1.0.0  - _Initial release_
+* 0.1.0  - _Initial release_
 
 
 ## Contact
