@@ -124,6 +124,15 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 ```npm run doc```
 > optional.  you can view the docs in the docs folder or on github.
 
+
+<br>
+## Todo
++ add more queries
++ impl export feature
++ fix tests
++ wire-up the badges for Travis, Coveralls, NPM
++ docs?
+
 <br>
 ## Release History
 

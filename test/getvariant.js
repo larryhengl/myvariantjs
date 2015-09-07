@@ -84,7 +84,7 @@ test("get variant - pass incorrect formatted field list param when only showing 
 })
 
 
-test("get variant - for a given variant id, chr9:g.107620835G>A, only show the dbnsfp.genename and cadd.phred fields", (t) => {
+test("get variant - for a given variant id, chr9:g.107620835G>A, only show the dbnsfp.genename and cadd fields", (t) => {
   let got = mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd']);   //Promised
 
   got
@@ -106,22 +106,19 @@ test("get variant - for a given variant id, chr9:g.107620835G>A, only show the d
 
 
 test("get variant chr9:g.107620835G>A, only showing dbnsfp.genename and cadd.phred, in csv format", (t) => {
-  let got = mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 'csv');   //Promised
-
+  let got = mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 'csv');
   got
     .then(
       function(res) {
-        // parse csv to test the response data
-        //let json = flat.unflatten(converter.csv2json(res));
-        console.log('res',res);
         let opts = {"DELIMITER": {"FIELD": ",",WRAP: '"'}};
-        converter.csv2json(res, (err,json) => {
+        converter.csv2json(res, (err,j) => {
+          let json = j[0];
           if (err) throw err;
           t.equal(typeof res, 'string', 'getvariants returns a csv string response')
           t.notEqual(res.length, 0, 'getvariants with csv format returns a string with a length')
           t.equal(json._id, 'chr9:g.107620835G>A', 'response has the requested id')
           t.equal(json.hasOwnProperty('dbnsfp') && json.dbnsfp.hasOwnProperty('genename'), true,'response has the dbnsfp.genename field')
-          t.equal(json.hasOwnProperty('cadd'), true, 'response has the cadd field')
+          t.equal(json.hasOwnProperty('cadd') && json.cadd.hasOwnProperty('phred'), true, 'response has the cadd field')
           t.equal(json.hasOwnProperty('snpeff'), false, 'response does not have the snpeff field')
           t.end()
         },opts)
@@ -129,7 +126,6 @@ test("get variant chr9:g.107620835G>A, only showing dbnsfp.genename and cadd.phr
     .catch(
       // Rejected promise
       function(reason) {
-        //t.ok('Proper rejection is handled, with rejected promise: '+reason);
         t.fail('Proper rejection is handled, with rejected promise: '+reason);
         t.end()
       })
