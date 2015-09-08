@@ -46,11 +46,41 @@ function _get(params, cb) {
       case 0:
         fetcher = function fetcher() {
           return new _Promise(function (resolve, reject) {
-            _superagent2['default'].get(params.url).query(params.query)
-            //.auth(params.auth.username, params.auth.password)
-            //.send(params.payload)
-            //.set('Accept', 'application/json')
-            .end(function (error, resp) {
+            _superagent2['default'].get(params.url).query(params.query).end(function (error, resp) {
+              error ? reject('error fetching from service: ' + error) : resolve(cb(resp));
+            });
+          });
+        };
+
+        context$1$0.next = 3;
+        return _regeneratorRuntime.awrap(fetcher());
+
+      case 3:
+        return context$1$0.abrupt('return', context$1$0.sent);
+
+      case 4:
+      case 'end':
+        return context$1$0.stop();
+    }
+  }, null, this);
+};
+
+/**
+ * ------------------------------------------------------------------
+ * ### Private fn to make the POST call.
+ * @name _post
+ * @param {object} [params] - optional params to pass to caller.
+ * @return {object} json
+ * @api private
+ */
+function _post(params, cb) {
+  var fetcher;
+  return _regeneratorRuntime.async(function _post$(context$1$0) {
+    while (1) switch (context$1$0.prev = context$1$0.next) {
+      case 0:
+        fetcher = function fetcher() {
+          return new _Promise(function (resolve, reject) {
+            _superagent2['default'].post(params.url).type('form').send(params.query).end(function (error, resp) {
               error ? reject('error fetching from service: ' + error) : resolve(cb(resp));
             });
           });
@@ -128,7 +158,7 @@ exports['default'] = {
    * #### This is a wrapper for a GET query of "/variant/{hgvsid}" service.
    *
    * Example endpoint:
-   *
+   *   GET
    *   http://myvariant.info/v1/variant/chr16:g.28883241A>G
    *
    *
@@ -139,8 +169,8 @@ exports['default'] = {
    *  mv.getvariant('chr9:g.107620835G>A', 'dbnsfp.genename')
    *  mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'])
    *  mv.getvariant('chr9:g.107620835G>A', 'all')
-   *  mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 8,'csv')
-   *  mv.getvariant('chr9:g.107620835G>A', null, null,'tsv')
+   *  mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 'csv')
+   *  mv.getvariant('chr9:g.107620835G>A', null, 'tsv')
    * ```
    *
    *
@@ -165,9 +195,6 @@ exports['default'] = {
     var fields = arguments.length <= 1 || arguments[1] === undefined ? 'all' : arguments[1];
     var format = arguments.length <= 2 || arguments[2] === undefined ? 'json' : arguments[2];
 
-    console.log('inputs to getvariant:', vid, fields, format);
-    //console.log('testing fields', fields, !fields || !Array.isArray(fields), !fields, !Array.isArray(fields) );
-
     if (!vid) return _Promise.reject("no variant id supplied");
     if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  getvariant('chr9:g.107620835G>A', 'dbnsfp.genename') ");
     if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   mv.getvariant('chr9:g.107620835G>A', null, 'csv') ");
@@ -184,19 +211,7 @@ exports['default'] = {
       }
     }
 
-    /*!
-     console.log(this.url, path, vid, flds, sz, fields, size);
-     var mv = require('./index.js');
-     mv.getvariant('chr9:g.107620835G>A')
-     mv.getvariant('chr9:g.107620835G>A', 'dbnsfp.genename')
-     mv.getvariant('chr9:g.107620835G>A', 'dbnsfp.genename', 'csv')
-     mv.getvariant('chr9:g.107620835G>A', null, 'csv')
-     mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'])
-     mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 8,'csv')
-    */
-
-    // make get call to the request url for the given query id
-    // add fields and size params if user supplied
+    // make get call to the request url for the given query id, adding fields param if user supplied
     var params = {};
     params.url = this.url + path;
     params.query = q;
@@ -210,15 +225,12 @@ exports['default'] = {
             convert = function convert() {
               return new _Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
-                console.log('format', format);
                 if (format !== 'json') {
-                  //let opts = {data: flat(resp.body)};
                   var opts = { DELIMITER: { FIELD: ",", WRAP: '"' } };
                   var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
                   if (['tsv', 'table', 'flat'].includes(format)) opts.DELIMITER.FIELD = '\t';
                   _json2Csv2['default'].json2csv(data, function (err, csv) {
                     if (err) reject(err); //throw err;
-                    console.log('j2c', csv);
                     resolve(csv);
                   }, opts);
                 } else {
@@ -245,22 +257,25 @@ exports['default'] = {
 
   /**
    * ------------------------------------------------------------------
-   * ###  Return the list of variant annotation objects for the given list of hgvs-base variant ids.
+   * ### Make variant queries in batch for a list of HGVS name-based ids
+   * ####  Return the list of variant annotation objects for the given list of hgvs-base variant ids.
    * #### This is a wrapper for POST query of "/variant" service.
    *
    * Example endpoint:
-   *
-   *   http://myvariant.info/v1/variant/chr16:g.28883241A>G
-   *
+   *   POST
+   *   http://myvariant.info/v1/variant/
+   *    form-data: {ids="chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C",
+   *                fields="dbnsfp.genename,cadd.phred"}
    *
    * Example calls:
    * ```javascript
    *  var mv = require('myvariant');
-   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"])
-   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "cadd.phred,dbsnp.rsid")
-   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "cadd.phred,dbsnp.rsid", "csv")
-   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "cadd.phred,dbsnp.rsid", "table")
-   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "cadd.phred,dbsnp.rsid", "tsv")
+   *  mv.getvariants("chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C")  // string of delimited ids
+   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"])  // array of ids
+   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "cadd.phred")
+   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "dbnsfp.genename", "csv")
+   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], ["dbnsfp.genename", "cadd.phred"], "table")
+   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], ["dbnsfp.genename", "cadd.phred"], "tsv")
    * ```
    *
    *
@@ -275,7 +290,7 @@ exports['default'] = {
    *
    *
    * @name getvariants
-   * @param {array} vids - array of hgvs-formatted variant ids, e.g. ["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"]
+   * @param {string|array} vids - string of comma delimited hgvs-formatted variant ids, eg. "chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C", or array of ids, eg. ["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"],
    * @param {string|array} [fields] - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
    * @param {number} [size] - boost the response size from the default 1000 given by the service api
    * @param {number} [format] - output formats: "json", "csv", "tsv", "table".  Default = "json".
@@ -284,31 +299,78 @@ exports['default'] = {
    * ---
    *
    */
-  getvariants: function getvariants(vids, fields, size, format) {
-    var path = 'query';
-    var term = 'dbnsfp.genename:CDK2';
-    var flds = undefined;
-    var q = {};
-    if (size) q.size = size;
+  getvariants: function getvariants(vids) {
+    var fields = arguments.length <= 1 || arguments[1] === undefined ? 'all' : arguments[1];
+    var format = arguments.length <= 2 || arguments[2] === undefined ? 'json' : arguments[2];
+
+    var path = 'variant/';
+    var params = {};
+    params.url = this.url + path;
+    params.query = {};
+
+    if (!vids) return _Promise.reject("no variant ids supplied");
+    if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  getvariant('chr9:g.107620835G>A', 'dbnsfp.genename') ");
+    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   mv.getvariant('chr9:g.107620835G>A', null, 'csv') ");
+
+    // vids = "chr1:g.876664G>A,chr1:g.69635G>C"
+    if (typeof vids === "string") {
+      var arrVids = vids.split(',');
+      if (arrVids.length === 1) {
+        // call the getvariant method for making single Get call
+        return this.getvariant(arrVids[0], fields, format);
+      } else {
+        params.query.ids = vids;
+      }
+    } else if (!Array.isArray(vids)) {
+      // for now, barf at objects
+      return _Promise.reject("error, wrong param type");
+    } else if (Array.isArray(vids)) {
+      params.query.ids = vids.join(',');
+    }
+
     if (fields) {
       if (typeof fields === 'string') {
-        q.fields = fields;
+        params.query.fields = fields;
       }
-      // assuming array of strings for now
-      if (typeof fields === 'object' && fields.length) {
-        q.fields = fields.join();
+      if (Array.isArray(fields)) {
+        params.query.fields = fields.join();
       }
     }
 
-    // make get call to the request url for the given query id
-    // add fields and size params if user supplied
-    var params = {};
-    params.url = this.url + path;
-    params.query = q;
+    // this callback is fired off when the Post Promise is resolved
+    function cb(resp) {
+      var convert;
+      return _regeneratorRuntime.async(function cb$(context$2$0) {
+        while (1) switch (context$2$0.prev = context$2$0.next) {
+          case 0:
+            convert = function convert() {
+              return new _Promise(function (resolve, reject) {
+                // check for format type. if != json (the default) then convert accordingly
+                if (format !== 'json') {
+                  var opts = { CHECK_SCHEMA_DIFFERENCES: false, DELIMITER: { FIELD: ",", WRAP: '"' } };
+                  var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
+                  if (['tsv', 'table', 'flat'].includes(format)) opts.DELIMITER.FIELD = '\t';
+                  _json2Csv2['default'].json2csv(data, function (err, csv) {
+                    if (err) reject(err); //throw err;
+                    resolve(csv);
+                  }, opts);
+                } else {
+                  resolve(resp.body);
+                }
+              });
+            };
 
-    // this callback is fired off when the Promise is resolved
-    var cb = function cb(resp) {
-      return resp.body;
+            context$2$0.next = 3;
+            return _regeneratorRuntime.awrap(convert());
+
+          case 3:
+            return context$2$0.abrupt('return', context$2$0.sent);
+
+          case 4:
+          case 'end':
+            return context$2$0.stop();
+        }
+      }, null, this);
     };
 
     return _post(params, cb);
