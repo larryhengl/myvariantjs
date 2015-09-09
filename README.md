@@ -128,10 +128,7 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 <br>
 ## Todo
 + add more queries
-+ impl export feature
-+ fix tests
 + wire-up the badges for Travis, Coveralls, NPM
-+ docs?
 
 <br>
 ## Release History

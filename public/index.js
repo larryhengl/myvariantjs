@@ -371,6 +371,7 @@ exports['default'] = {
 
   /**
    * ------------------------------------------------------------------
+   * ## NOPE, NOT READY, DONT USE THIS.
    * ###  Return a variant query result.
    * #### This is a wrapper for GET query of "/query?q={query}" service.
    *
@@ -392,7 +393,7 @@ exports['default'] = {
    *
    */
   query: function query(search) {
-    /*
+    /*!
         superagent
           //.get('http://myvariant.info/v1/query?q=dbnsfp.genename:CDK2')
           .get(this.url + path)
@@ -406,6 +407,7 @@ exports['default'] = {
 
   /**
    * ------------------------------------------------------------------
+   * ## NOPE, NOT READY, DONT USE THIS.
    * ###  Return the batch query result.
    * #### This is a wrapper for POST query of "/query" service.
    *

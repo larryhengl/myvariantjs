@@ -90,6 +90,7 @@ Example calls:
 ## query(search)
 
 ------------------------------------------------------------------
+## NOPE, NOT READY, DONT USE THIS.
 ###  Return a variant query result.
 #### This is a wrapper for GET query of "/query?q={query}" service.
 
@@ -109,18 +110,10 @@ Example calls:
 
 * **object** json
 
-superagent
-      //.get('http://myvariant.info/v1/query?q=dbnsfp.genename:CDK2')
-      .get(this.url + path)
-      .query({ q: qry || term })
-      .end(function(err, res){
-        if (err) console.log('error fetching from service',err);
-        else console.log(res.body.hits.length);
-      });
-
 ## querymany(search)
 
 ------------------------------------------------------------------
+## NOPE, NOT READY, DONT USE THIS.
 ###  Return the batch query result.
 #### This is a wrapper for POST query of "/query" service.
 
