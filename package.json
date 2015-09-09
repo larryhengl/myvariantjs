@@ -16,7 +16,7 @@
     "test": "babel-tape-runner test/*.js | tspec",
     "prebuild": "npm run clean -s",
     "build": "babel --optional es7.asyncFunctions --optional runtime src -d public",
-    "postbuild": "npm run test -s",
+    "postbuild": "npm run test -s && npm run doc && npm run toc",
     "coverage": "babel-node node_modules/.bin/isparta cover test/*.js",
     "coveralls": "npm run coverage -s && coveralls < coverage/lcov.info",
     "postcoveralls": "rimraf ./coverage",
@@ -25,7 +25,8 @@
     "minor": "npm version minor && npm publish",
     "major": "npm version major && npm publish",
     "postpublish": "git push origin master --follow-tags",
-    "toc": "doctoc --github --title \"# Changelog\" CHANGELOG.md"
+    "toc": "doctoc --github --title \"# Changelog\" CHANGELOG.md",
+    "doc": "markdox src/index.js -o ./docs/api.md"
   },
   "repository": {
     "type": "git",
@@ -58,6 +59,7 @@
     "babel-runtime": "*",
     "flat": "^1.6.0",
     "json-2-csv": "^1.4.0",
+    "markdox": "^0.1.9",
     "superagent": "^1.3.0"
   }
 }

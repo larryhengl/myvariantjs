@@ -1,10 +1,3 @@
-/*!
-   comments are in md format and used with markdox to gen the md files posted in ./docs.
-    npm tests
-   or
-    markdox index.js -o ./docs/api.md
-*/
-
 import superagent from 'superagent';
 import flat from 'flat';
 import converter from 'json-2-csv';
@@ -69,7 +62,7 @@ export default {
  *
  * Example calls:
  * ```javascript
- *  var mv = require('myvariant');
+ *  var mv = require('myvariantjs');
  *  mv.getfields()
  *  mv.getfields('gene')
  * ```
@@ -113,7 +106,7 @@ export default {
  *
  * Example calls:
  * ```javascript
- *  var mv = require('myvariant');
+ *  var mv = require('myvariantjs');
  *  mv.getvariant('chr9:g.107620835G>A')
  *  mv.getvariant('chr9:g.107620835G>A', 'dbnsfp.genename')
  *  mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'])
@@ -202,7 +195,7 @@ export default {
  *
  * Example calls:
  * ```javascript
- *  var mv = require('myvariant');
+ *  var mv = require('myvariantjs');
  *  mv.getvariants("chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C")  // string of delimited ids
  *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"])  // array of ids
  *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "cadd.phred")
@@ -301,7 +294,7 @@ export default {
  *
  * Example calls:
  * ```javascript
- *  var mv = require('myvariant');
+ *  var mv = require('myvariantjs');
  *  mv.query("dbsnp.rsid:rs58991260", "dbsnp")
  *  mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", "dbnsfp.polyphen2.hdiv")
  *  mv.query("chr1:69000-70000", "cadd.phred")
@@ -337,7 +330,7 @@ export default {
  *
  * Example calls:
  * ```javascript
- *  var mv = require('myvariant');
+ *  var mv = require('myvariantjs');
  *  mv.query("dbsnp.rsid:rs58991260", "dbsnp")
  *  mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", "dbnsfp.polyphen2.hdiv")
  *  mv.query("chr1:69000-70000", "cadd.phred")
