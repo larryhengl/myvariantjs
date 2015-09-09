@@ -197,7 +197,7 @@ exports['default'] = {
 
     if (!vid) return _Promise.reject("no variant id supplied");
     if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  getvariant('chr9:g.107620835G>A', 'dbnsfp.genename') ");
-    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   mv.getvariant('chr9:g.107620835G>A', null, 'csv') ");
+    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   mv.getvariant('chr9:g.107620835G>A', 'all', 'json') ");
 
     var path = 'variant/' + vid;
     var flds = undefined;
@@ -310,7 +310,7 @@ exports['default'] = {
 
     if (!vids) return _Promise.reject("no variant ids supplied");
     if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  getvariant('chr9:g.107620835G>A', 'dbnsfp.genename') ");
-    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   mv.getvariant('chr9:g.107620835G>A', null, 'csv') ");
+    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   mv.getvariant('chr9:g.107620835G>A', 'all', 'json') ");
 
     // vids = "chr1:g.876664G>A,chr1:g.69635G>C"
     if (typeof vids === "string") {
