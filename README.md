@@ -6,7 +6,7 @@
 [![Node version][node-image]][node-url]
 [![Build Status](https://travis-ci.org/larryhengl/myvariantjs.svg?branch=master)](https://travis-ci.org/larryhengl/myvariantjs)
 [![Coverage Status](https://coveralls.io/repos/larryhengl/myvariantjs/badge.svg?branch=master&service=github)](https://coveralls.io/github/larryhengl/myvariantjs?branch=master)
-[![NPM Downloads][download-badge]][npm-url]
+[![NPM Downloads][download-badge]][https://img.shields.io/npm/dt/myvariantjs.svg]
 ![myvariant-badge][myvariant]
 
 
