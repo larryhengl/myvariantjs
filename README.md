@@ -5,7 +5,7 @@
 > ![Version][version]
 [![NPM version][npm-image]][npm-url]
 <!--
-[![Build Status][travis-image]][travis-url]
+[![Build Status](https://travis-ci.org/larryhengl/myvariantjs.svg?branch=master)](https://travis-ci.org/larryhengl/myvariantjs)
 [![Coveralls Status][coveralls-image]][coveralls-url]
 [![Dependency Status][depstat-image]][depstat-url]
 -->
@@ -151,8 +151,6 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 [npm-url]: https://npmjs.org/package/example
 [npm-image]: https://img.shields.io/npm/v/example.svg?style=flat-square
 
-[travis-url]: https://travis-ci.org//example
-[travis-image]: https://img.shields.io/travis//example.svg?style=flat-square
 
 [coveralls-url]: https://coveralls.io/r//example
 [coveralls-image]: https://img.shields.io/coveralls//example.svg?style=flat-square
