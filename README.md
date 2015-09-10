@@ -1,6 +1,6 @@
 # myvariantjs
 
-> A JS client for MyVariant.info web services
+> A NodeJS client for MyVariant.info web services
 
 > ![Version][version]
 [![NPM version][npm-image]][npm-url]
