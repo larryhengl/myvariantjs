@@ -7,3 +7,4 @@ build
 tmp
 coverage
 npm-debug.log
+.coveralls.yml

@@ -45,7 +45,7 @@
     "babel": "*",
     "babel-eslint": "*",
     "babel-tape-runner": "^1.2.0",
-    "coveralls": "*",
+    "coveralls": "^2.11.4",
     "dependency-check": "*",
     "doctoc": "*",
     "eslint": "*",

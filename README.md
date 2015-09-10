@@ -4,14 +4,11 @@
 
 > ![Version][version]
 [![NPM version][npm-image]][npm-url]
-<!--
 [![Build Status](https://travis-ci.org/larryhengl/myvariantjs.svg?branch=master)](https://travis-ci.org/larryhengl/myvariantjs)
-[![Coveralls Status][coveralls-image]][coveralls-url]
-[![Dependency Status][depstat-image]][depstat-url]
--->
+[![Coverage Status](https://coveralls.io/repos/larryhengl/myvariantjs/badge.svg?branch=master&service=github)](https://coveralls.io/github/larryhengl/myvariantjs?branch=master)
 [![NPM Downloads][download-badge]][npm-url]
-![wow-badge][wow]
->
+![myvariant-badge][myvariant]
+
 
 <br>
 <table style="border:none;">
@@ -145,17 +142,11 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 
 [license]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
 
-[version]: https://img.shields.io/badge/style-1.0.0-blue.svg?style=flat-square&label=release
-[wow]: https://img.shields.io/badge/style-happy-green.svg?style=flat-square&label=myvariant
+[version]: https://img.shields.io/badge/style-0.1.0-blue.svg?style=flat-square&label=release
+
+[myvariant]: https://img.shields.io/badge/style-happy-green.svg?style=flat-square&label=myvariant
 
 [npm-url]: https://npmjs.org/package/example
 [npm-image]: https://img.shields.io/npm/v/example.svg?style=flat-square
-
-
-[coveralls-url]: https://coveralls.io/r//example
-[coveralls-image]: https://img.shields.io/coveralls//example.svg?style=flat-square
-
-[depstat-url]: https://david-dm.org//example
-[depstat-image]: https://david-dm.org//example.svg?style=flat-square
 
 [download-badge]: http://img.shields.io/npm/dm/example.svg?style=flat-square
