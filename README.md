@@ -3,7 +3,7 @@
 > A NodeJS client for MyVariant.info web services
 
 > ![Version][version]
-[![NPM version][npm-image]][npm-url]
+[![Node version][node-image]][node-url]
 [![Build Status](https://travis-ci.org/larryhengl/myvariantjs.svg?branch=master)](https://travis-ci.org/larryhengl/myvariantjs)
 [![Coverage Status](https://coveralls.io/repos/larryhengl/myvariantjs/badge.svg?branch=master&service=github)](https://coveralls.io/github/larryhengl/myvariantjs?branch=master)
 [![NPM Downloads][download-badge]][npm-url]
@@ -125,7 +125,7 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 <br>
 ## Todo
 + add more queries
-+ wire-up the badges for Travis, Coveralls, NPM
+
 
 <br>
 ## Release History
@@ -146,7 +146,7 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 
 [myvariant]: https://img.shields.io/badge/style-happy-green.svg?style=flat-square&label=myvariant
 
-[npm-url]: https://npmjs.org/package/example
-[npm-image]: https://img.shields.io/npm/v/example.svg?style=flat-square
+[node-url]: https://nodejs.org/en/
+[node-image]: http://img.shields.io/node/v/latest-version.svg?style=flat-square
 
 [download-badge]: http://img.shields.io/npm/dm/example.svg?style=flat-square
