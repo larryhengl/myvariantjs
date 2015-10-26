@@ -117,7 +117,7 @@ exports['default'] = {
    */
   getfields: function getfields(search) {
     var params = {};
-    params.url = this.url + 'fields';
+    params.url = this.url + 'metadata/fields';
 
     // this callback is fired off when the Promise is resolved
     var cb = function cb(resp) {
@@ -371,43 +371,137 @@ exports['default'] = {
 
   /**
    * ------------------------------------------------------------------
-   * ## NOPE, NOT READY, DONT USE THIS.
    * ###  Return a variant query result.
    * #### This is a wrapper for GET query of "/query?q={query}" service.
+   *
+   * ##### Service API [here](http://docs.myvariant.info/en/latest/doc/variant_query_service.html#query-parameters)
+   *
+   *
+   * Example endpoints:
+   *   GET http://myvariant.info/v1/query?q=chr1:69000-70000
+   *   GET http://myvariant.info/v1/query?q=snpeff.ann.hgvs_p:p.Ala681Val AND snpeff.ann.gene_name:NAGLU&size=10
    *
    *
    * Example calls:
    * ```javascript
    *  var mv = require('myvariantjs');
+   *  mv.query("chr1:69000-70000", "cadd.phred")
    *  mv.query("dbsnp.rsid:rs58991260", "dbsnp")
    *  mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", "dbnsfp.polyphen2.hdiv")
-   *  mv.query("chr1:69000-70000", "cadd.phred")
+   * ```
+   *
+   *  **_note: The combination of “size” and “from” parameters can be used to get paging for large queries:_**
+   * ```
+   *   q=cdk*&size=50                     first 50 hits
+   *   q=cdk*&size=50&from=50             the next 50 hits
+   * ```
+   *
+   * **_Range queries_**
+   * ```
+   *   q=dbnsfp.polyphen2.hdiv.score:>0.99
+   *   q=dbnsfp.polyphen2.hdiv.score:>=0.99
+   *   q=exac.af:<0.00001
+   *   q=exac.af:<=0.00001
+   *
+   *   q=exac.ac.ac_adj:[76640 TO 80000]        # bounded (including 76640 and 80000)
+   *   q=exac.ac.ac_adj:{76640 TO 80000}        # unbounded
+   * ```
+   *
+   * **_Wildcard queries_**
+   * **_note: wildcard character “*” or ”?” is supported in either simple queries or fielded queries:_**
+   * ```
+   *   q=cdk*
+   *   q=dbnsfp.genename:CDK?
+   *   q=dbnsfp.genename:CDK*
    * ```
    *
    *
    * @name query
-   * @param {string} search - case insensitive string to search.  ??
-   * @return {object} json
+   * @param {string} search - case insensitive string to search.
+   * @param {string|array} [fields] - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
+   * @param {number} [size] - boost the response size from the default 1000 given by the service api
+   * @param {number} [format] - output formats: "json", "csv", "tsv", "table".  Default = "json".
+   * @return {object|string} json or string
    * @api public
    * ---
-   *
    */
-  query: function query(search) {
-    /*!
-        superagent
-          //.get('http://myvariant.info/v1/query?q=dbnsfp.genename:CDK2')
-          .get(this.url + path)
-          .query({ q: qry || term })
-          .end(function(err, res){
-            if (err) console.log('error fetching from service',err);
-            else console.log(res.body.hits.length);
-          });
-    */
+  query: function query(_query) {
+    var fields = arguments.length <= 1 || arguments[1] === undefined ? 'all' : arguments[1];
+    var size = arguments.length <= 2 || arguments[2] === undefined ? 10 : arguments[2];
+    var from = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
+    var format = arguments.length <= 4 || arguments[4] === undefined ? 'json' : arguments[4];
+
+    // check the args
+    if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', 'dbnsfp.genename', null, null, null) ");
+    if (!size || typeof size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', null, 100, null, null) ");
+    if (typeof from === "undefined" || typeof from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', null, null, 5, null) ");
+    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', null, null, null, 'json') ");
+
+    var flds = undefined;
+    var q = {};
+
+    // set the formatted query string
+    // set q if exists
+    // parse params into ANDed statement
+    q.q = _query;
+
+    // set the fields param
+    if (fields) {
+      if (typeof fields === 'string') {
+        q.fields = fields;
+      }
+      if (Array.isArray(fields)) {
+        q.fields = fields.join();
+      }
+    }
+
+    // make get call to the request url for the given query id, adding fields param if user supplied
+    var path = 'query';
+    var params = {};
+    params.url = this.url + path;
+    params.query = q;
+
+    // this callback is fired off when the Get Promise is resolved
+    function cb(resp) {
+      var convert;
+      return _regeneratorRuntime.async(function cb$(context$2$0) {
+        while (1) switch (context$2$0.prev = context$2$0.next) {
+          case 0:
+            convert = function convert() {
+              return new _Promise(function (resolve, reject) {
+                // check for format type. if != json (the default) then convert accordingly
+                if (format !== 'json') {
+                  var opts = { DELIMITER: { FIELD: ",", WRAP: '"' } };
+                  var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
+                  if (['tsv', 'table', 'flat'].includes(format)) opts.DELIMITER.FIELD = '\t';
+                  _json2Csv2['default'].json2csv(data, function (err, csv) {
+                    if (err) reject(err); //throw err;
+                    resolve(csv);
+                  }, opts);
+                } else {
+                  resolve(resp.body);
+                }
+              });
+            };
+
+            context$2$0.next = 3;
+            return _regeneratorRuntime.awrap(convert());
+
+          case 3:
+            return context$2$0.abrupt('return', context$2$0.sent);
+
+          case 4:
+          case 'end':
+            return context$2$0.stop();
+        }
+      }, null, this);
+    };
+
+    return _get(params, cb);
   },
 
   /**
    * ------------------------------------------------------------------
-   * ## NOPE, NOT READY, DONT USE THIS.
    * ###  Return the batch query result.
    * #### This is a wrapper for POST query of "/query" service.
    *
@@ -415,20 +509,99 @@ exports['default'] = {
    * Example calls:
    * ```javascript
    *  var mv = require('myvariantjs');
-   *  mv.query("dbsnp.rsid:rs58991260", "dbsnp")
-   *  mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", "dbnsfp.polyphen2.hdiv")
-   *  mv.query("chr1:69000-70000", "cadd.phred")
+   *  mv.querymany(['rs58991260', 'rs2500'], 'dbsnp.rsid')
+   *  mv.querymany(['RCV000083620', 'RCV000083611', 'RCV000083584'], 'clinvar.rcv_accession')
+   *  mv.querymany(['COSM1362966', 'COSM990046', 'COSM1392449'], ['dbsnp.rsid', 'cosmic.cosmic_id'], ['dbsnp','cosmic'])
    * ```
    *
    *
    * @name querymany
-   * @param {string} search - case insensitive string to search.  ??
-   * @return {object} json
+   * @param {string} q - csv formatted search terms
+   * @param {string|array} [scopes] - string or array of field names to scope the search to
+   * @param {string|array} [fields] - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
    * @api public
    * ---
    *
    */
-  querymany: function querymany(search) {}
+  querymany: function querymany(q) {
+    var scopes = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+    var fields = arguments.length <= 2 || arguments[2] === undefined ? 'all' : arguments[2];
+    var format = arguments.length <= 3 || arguments[3] === undefined ? 'json' : arguments[3];
+
+    if (!q) return _Promise.reject("no query terms supplied");
+    if (!scopes || typeof scopes !== 'string' && !Array.isArray(scopes)) return _Promise.reject("no scopes fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  querymany(['rs58991260', 'rs2500'], 'dbsnp.rsid') ");
+    if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  querymany(['COSM1362966', 'COSM990046', 'COSM1392449'], 'cosmic.cosmic_id', 'cosmic') ");
+
+    var path = 'query/';
+    var params = {};
+    params.url = this.url + path;
+    params.query = {};
+
+    if (typeof q === "string") {
+      params.query.q = q;
+    } else if (!Array.isArray(q)) {
+      // for now, barf at objects
+      return _Promise.reject("error, wrong param type");
+    } else if (Array.isArray(q)) {
+      params.query.q = q.join(',');
+    }
+
+    if (scopes) {
+      if (typeof scopes === 'string') {
+        params.query.scopes = scopes;
+      }
+      if (Array.isArray(scopes)) {
+        params.query.scopes = scopes.join();
+      }
+    }
+
+    if (fields) {
+      if (typeof fields === 'string') {
+        params.query.fields = fields;
+      }
+      if (Array.isArray(fields)) {
+        params.query.fields = fields.join();
+      }
+    }
+
+    // this callback is fired off when the Post Promise is resolved
+    function cb(resp) {
+      var convert;
+      return _regeneratorRuntime.async(function cb$(context$2$0) {
+        while (1) switch (context$2$0.prev = context$2$0.next) {
+          case 0:
+            convert = function convert() {
+              return new _Promise(function (resolve, reject) {
+                // check for format type. if != json (the default) then convert accordingly
+                if (format !== 'json') {
+                  var opts = { CHECK_SCHEMA_DIFFERENCES: false, DELIMITER: { FIELD: ",", WRAP: '"' } };
+                  var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
+                  if (['tsv', 'table', 'flat'].includes(format)) opts.DELIMITER.FIELD = '\t';
+                  _json2Csv2['default'].json2csv(data, function (err, csv) {
+                    if (err) reject(err); //throw err;
+                    resolve(csv);
+                  }, opts);
+                } else {
+                  resolve(resp.body);
+                }
+              });
+            };
+
+            context$2$0.next = 3;
+            return _regeneratorRuntime.awrap(convert());
+
+          case 3:
+            return context$2$0.abrupt('return', context$2$0.sent);
+
+          case 4:
+          case 'end':
+            return context$2$0.stop();
+        }
+      }, null, this);
+    };
+
+    return _post(params, cb);
+  }
 
 };
 module.exports = exports['default'];
