@@ -427,7 +427,7 @@ exports['default'] = {
    */
   query: function query(_query) {
     var fields = arguments.length <= 1 || arguments[1] === undefined ? 'all' : arguments[1];
-    var size = arguments.length <= 2 || arguments[2] === undefined ? 10 : arguments[2];
+    var size = arguments.length <= 2 || arguments[2] === undefined ? 10000 : arguments[2];
     var from = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
     var format = arguments.length <= 4 || arguments[4] === undefined ? 'json' : arguments[4];
 
@@ -441,9 +441,8 @@ exports['default'] = {
     var q = {};
 
     // set the formatted query string
-    // set q if exists
-    // parse params into ANDed statement
     q.q = _query;
+    q.size = size;
 
     // set the fields param
     if (fields) {

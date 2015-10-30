@@ -342,7 +342,7 @@ export default {
  * @api public
  * ---
  */
-  query(query, fields = 'all', size = 10, from = 0, format = 'json') {
+  query(query, fields = 'all', size = 10000, from = 0, format = 'json') {
     // check the args
     if (!fields || (typeof fields !== 'string' && !Array.isArray(fields))) return Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', 'dbnsfp.genename', null, null, null) ");
     if (!size || (typeof size !== 'number')) return Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', null, 100, null, null) ");
@@ -354,6 +354,7 @@ export default {
 
     // set the formatted query string
     q.q = query;
+    q.size = size;
 
     // set the fields param
     if (fields) {

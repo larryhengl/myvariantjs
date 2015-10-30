@@ -101,13 +101,11 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
       "cosmic_id": "COSM478"}
      }
 ```
-<br>
-> **See the [Usage Doc](docs/usage.md) for more examples.**
 
 <br>
 ## API <a id="api-sec"></a>
 
-[api](docs/api.md)
+[api and usage docs](docs/api.md)
 
 <br>
 ## Testing
