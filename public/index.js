@@ -6,6 +6,8 @@ var _Promise = require('babel-runtime/core-js/promise')['default'];
 
 var _Object$keys = require('babel-runtime/core-js/object/keys')['default'];
 
+var _Object$assign = require('babel-runtime/core-js/object/assign')['default'];
+
 var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
 
 Object.defineProperty(exports, '__esModule', {
@@ -20,9 +22,9 @@ var _flat = require('flat');
 
 var _flat2 = _interopRequireDefault(_flat);
 
-var _json2Csv = require('json-2-csv');
+var _jsonexport = require('jsonexport');
 
-var _json2Csv2 = _interopRequireDefault(_json2Csv);
+var _jsonexport2 = _interopRequireDefault(_jsonexport);
 
 /**
  * ------------------------------------------------------------------
@@ -162,8 +164,8 @@ exports['default'] = {
    *  mv.getvariant('chr9:g.107620835G>A', 'dbnsfp.genename')
    *  mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'])
    *  mv.getvariant('chr9:g.107620835G>A', 'all')
-   *  mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 'csv')
-   *  mv.getvariant('chr9:g.107620835G>A', null, 'tsv')
+   *  mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], null, 0, 'csv')
+   *  mv.getvariant('chr9:g.107620835G>A', null, null, null, 'tsv')
    * ```
    *
    *
@@ -174,35 +176,48 @@ exports['default'] = {
    * >> Field name supports dot notation for nested data structure as well,
    * >> e.g. you can pass "dbnsfp.genename" or "cadd.phred".
    *
-   *
+   * API Note: optional params are pased in via named options object
    * @name getvariant
    * @param {string} vid - variantid; hgvs-formatted variant id, e.g. chr9:g.107620835G>A
    * @param {string|array} [fields] - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
-   * @param {string} [format] - convert json to given format. Supports json, csv, tsv, table (csv), flat. Default=json. Note: non-josn are flattened, and tsv=table=flat.
+   * @param {number} [size] - boost the response size from the default 1000 given by the service api
+   * @param {number} [from] - when paging use `from` as the row offset
+   * @param {number} [format] - output formats: "json", "csv", "tsv", "table".  Default = "json".
    * @return {object} json
    * @api public
    * ---
    *
    */
-  getvariant: function getvariant(vid) {
-    var fields = arguments.length <= 1 || arguments[1] === undefined ? 'all' : arguments[1];
-    var format = arguments.length <= 2 || arguments[2] === undefined ? 'json' : arguments[2];
+  getvariant: function getvariant(vid, options) {
+    if (options && typeof options !== 'object') return _Promise.reject("options ,ust be passed in via the options object");
+    var opts = _Object$assign({
+      fields: 'all',
+      size: 10000,
+      from: 0,
+      format: 'json'
+    }, options);
 
+    // check args
     if (!vid) return _Promise.reject("no variant id supplied");
-    if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  getvariant('chr9:g.107620835G>A', 'dbnsfp.genename') ");
-    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   mv.getvariant('chr9:g.107620835G>A', 'all', 'json') ");
+    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
+    if (!opts.size || typeof opts.size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
+    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
+    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
 
     var path = 'variant/' + vid;
     var flds = undefined;
     var q = {};
-    if (fields) {
-      if (typeof fields === 'string') {
-        q.fields = fields;
+    if (opts.fields) {
+      if (typeof opts.fields === 'string') {
+        q.fields = opts.fields;
       }
-      if (Array.isArray(fields)) {
-        q.fields = fields.join();
+      if (Array.isArray(opts.fields)) {
+        q.fields = opts.fields.join();
       }
     }
+
+    q.size = opts.size;
+    q.from = opts.from;
 
     // make get call to the request url for the given query id, adding fields param if user supplied
     var params = {};
@@ -218,14 +233,15 @@ exports['default'] = {
             convert = function convert() {
               return new _Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
-                if (format !== 'json') {
-                  var opts = { DELIMITER: { FIELD: ",", WRAP: '"' } };
+                if (opts.format !== 'json') {
+                  var _options = {};
                   var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
-                  if (['tsv', 'table', 'flat'].includes(format)) opts.DELIMITER.FIELD = '\t';
-                  _json2Csv2['default'].json2csv(data, function (err, csv) {
-                    if (err) reject(err); //throw err;
+                  if (['tsv', 'table', 'flat'].indexOf(opts.format) > -1) _options.rowDelimiter = '\t';
+
+                  (0, _jsonexport2['default'])(data, _options, function (err, csv) {
+                    if (err) return console.log(err);
                     resolve(csv);
-                  }, opts);
+                  });
                 } else {
                   resolve(resp.body);
                 }
@@ -266,9 +282,9 @@ exports['default'] = {
    *  mv.getvariants("chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C")  // string of delimited ids
    *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"])  // array of ids
    *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "cadd.phred")
-   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "dbnsfp.genename", "csv")
-   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], ["dbnsfp.genename", "cadd.phred"], "table")
-   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], ["dbnsfp.genename", "cadd.phred"], "tsv")
+   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "dbnsfp.genename", null, null, "csv")
+   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], ["dbnsfp.genename", "cadd.phred"], 5000, null, "table")
+   *  mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], ["dbnsfp.genename", "cadd.phred"], 10000, 0, "tsv")
    * ```
    *
    *
@@ -282,35 +298,44 @@ exports['default'] = {
    * >> output formats "table" and "tsv" are the same.
    *
    *
+   * API Note: optional params are pased in via named options object
    * @name getvariants
    * @param {string|array} vids - string of comma delimited hgvs-formatted variant ids, eg. "chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C", or array of ids, eg. ["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"],
    * @param {string|array} [fields] - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
-   * @param {number} [size] - boost the response size from the default 1000 given by the service api
+   * @param {number} [size] - boost the response size from the default 1000 given by the service api. Default = 10000.
+   * @param {number} [from] - when paging use `from` as the row offset. Default = 0.
    * @param {number} [format] - output formats: "json", "csv", "tsv", "table".  Default = "json".
    * @return {object|string} json or string
    * @api public
    * ---
    *
    */
-  getvariants: function getvariants(vids) {
-    var fields = arguments.length <= 1 || arguments[1] === undefined ? 'all' : arguments[1];
-    var format = arguments.length <= 2 || arguments[2] === undefined ? 'json' : arguments[2];
+  getvariants: function getvariants(vids, options) {
+    if (options && typeof options !== 'object') return _Promise.reject("options must be passed in via the options object");
+    var opts = _Object$assign({
+      fields: 'all',
+      size: 10000,
+      from: 0,
+      format: 'json'
+    }, options);
 
     var path = 'variant/';
     var params = {};
     params.url = this.url + path;
     params.query = {};
 
+    // check the args
     if (!vids) return _Promise.reject("no variant ids supplied");
-    if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  getvariant('chr9:g.107620835G>A', 'dbnsfp.genename') ");
-    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   mv.getvariant('chr9:g.107620835G>A', 'all', 'json') ");
+    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
+    if (!opts.size || typeof opts.size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
+    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
+    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
 
-    // vids = "chr1:g.876664G>A,chr1:g.69635G>C"
     if (typeof vids === "string") {
       var arrVids = vids.split(',');
       if (arrVids.length === 1) {
         // call the getvariant method for making single Get call
-        return this.getvariant(arrVids[0], fields, format);
+        return this.getvariant(arrVids[0], opts);
       } else {
         params.query.ids = vids;
       }
@@ -321,14 +346,18 @@ exports['default'] = {
       params.query.ids = vids.join(',');
     }
 
-    if (fields) {
-      if (typeof fields === 'string') {
-        params.query.fields = fields;
+    if (opts.fields) {
+      if (typeof opts.fields === 'string') {
+        params.query.fields = opts.fields;
       }
-      if (Array.isArray(fields)) {
-        params.query.fields = fields.join();
+      if (Array.isArray(opts.fields)) {
+        params.query.fields = opts.fields.join();
       }
     }
+
+    // size & from not part of getvariants service api. left here for consistency. sorta.
+    //params.query.size = opts.size;
+    //params.query.from = opts.from;
 
     // this callback is fired off when the Post Promise is resolved
     function cb(resp) {
@@ -339,14 +368,15 @@ exports['default'] = {
             convert = function convert() {
               return new _Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
-                if (format !== 'json') {
-                  var opts = { CHECK_SCHEMA_DIFFERENCES: false, DELIMITER: { FIELD: ",", WRAP: '"' } };
+                if (opts.format !== 'json') {
+                  var opters = {};
                   var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
-                  if (['tsv', 'table', 'flat'].includes(format)) opts.DELIMITER.FIELD = '\t';
-                  _json2Csv2['default'].json2csv(data, function (err, csv) {
-                    if (err) reject(err); //throw err;
+                  if (['tsv', 'table', 'flat'].indexOf(opts.format) > -1) opters.rowDelimiter = '\t';
+
+                  (0, _jsonexport2['default'])(data, opters, function (err, csv) {
+                    if (err) return console.log(err);
                     resolve(csv);
-                  }, opts);
+                  });
                 } else {
                   resolve(resp.body);
                 }
@@ -385,9 +415,11 @@ exports['default'] = {
    * Example calls:
    * ```javascript
    *  var mv = require('myvariantjs');
+   *  var mv = require('./public/index');
    *  mv.query("chr1:69000-70000", "cadd.phred")
    *  mv.query("dbsnp.rsid:rs58991260", "dbsnp")
    *  mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", "dbnsfp.polyphen2.hdiv")
+   *  mv.query("snpeff.ann.gene_name:naglu", ["snpeff.ann.gene_name","dbnsfp"], 10, null, "csv")
    * ```
    *
    *  **_note: The combination of “size” and “from” parameters can be used to get paging for large queries:_**
@@ -416,33 +448,38 @@ exports['default'] = {
    * ```
    *
    *
+   * API Note: optional params are pased in via named options object
    * @name query
    * @param {string} search - case insensitive string to search.
    * @param {string|array} [fields] - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
    * @param {number} [size] - boost the response size from the default 1000 given by the service api
-   * @param {number} [format] - output formats: "json", "csv", "tsv", "table".  Default = "json".
+   * @param {number} [from] - when paging use `from` as the row offset
+   * @param {string} [format] - output formats: "json", "csv", "tsv", "table".  Default = "json".
    * @return {object|string} json or string
    * @api public
    * ---
    */
-  query: function query(_query) {
-    var fields = arguments.length <= 1 || arguments[1] === undefined ? 'all' : arguments[1];
-    var size = arguments.length <= 2 || arguments[2] === undefined ? 10000 : arguments[2];
-    var from = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
-    var format = arguments.length <= 4 || arguments[4] === undefined ? 'json' : arguments[4];
+  query: function query(_query, options) {
+    if (options && typeof options !== 'object') return _Promise.reject("options ,ust be passed in via the options object");
+    var opts = _Object$assign({
+      fields: 'all',
+      size: 10000,
+      from: 0,
+      format: 'json'
+    }, options);
 
     // check the args
-    if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', 'dbnsfp.genename', null, null, null) ");
-    if (!size || typeof size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', null, 100, null, null) ");
-    if (typeof from === "undefined" || typeof from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', null, null, 5, null) ");
-    if (!format || !this.validFormats.includes(format)) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', null, null, null, 'json') ");
+    if (!_query) return _Promise.reject("no query terms supplied");
+    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
+    if (!opts.size || typeof opts.size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
+    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
+    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
 
     var flds = undefined;
     var q = {};
 
     // set the formatted query string
     q.q = _query;
-    q.size = size;
 
     // set the fields param
     if (fields) {
@@ -453,6 +490,9 @@ exports['default'] = {
         q.fields = fields.join();
       }
     }
+
+    q.size = isize;
+    q.from = ifrom;
 
     // make get call to the request url for the given query id, adding fields param if user supplied
     var path = 'query';
@@ -470,13 +510,14 @@ exports['default'] = {
               return new _Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
                 if (format !== 'json') {
-                  var opts = { DELIMITER: { FIELD: ",", WRAP: '"' } };
-                  var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
-                  if (['tsv', 'table', 'flat'].includes(format)) opts.DELIMITER.FIELD = '\t';
-                  _json2Csv2['default'].json2csv(data, function (err, csv) {
-                    if (err) reject(err); //throw err;
+                  var _opts = {};
+                  var data = !Array.isArray(resp.body.hits) ? [resp.body.hits] : resp.body.hits;
+                  if (['tsv', 'table', 'flat'].indexOf(format) > -1) _opts.rowDelimiter = '\t';
+
+                  (0, _jsonexport2['default'])(data, _opts, function (err, csv) {
+                    if (err) return console.log(err);
                     resolve(csv);
-                  }, opts);
+                  });
                 } else {
                   resolve(resp.body);
                 }
@@ -514,22 +555,36 @@ exports['default'] = {
    * ```
    *
    *
+   * API Note: optional params are pased in via named options object
    * @name querymany
    * @param {string} q - csv formatted search terms
    * @param {string|array} [scopes] - string or array of field names to scope the search to
    * @param {string|array} [fields] - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
+   * @param {number} [size] - boost the response size from the default 1000 given by the service api
+   * @param {number} [from] - when paging use `from` as the row offset
+   * @param {string} [format] - output formats: "json", "csv", "tsv", "table".  Default = "json".
+   * @return {object|string} json or string
    * @api public
    * ---
    *
    */
-  querymany: function querymany(q) {
-    var scopes = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-    var fields = arguments.length <= 2 || arguments[2] === undefined ? 'all' : arguments[2];
-    var format = arguments.length <= 3 || arguments[3] === undefined ? 'json' : arguments[3];
+  querymany: function querymany(q, options) {
+    if (options && typeof options !== 'object') return _Promise.reject("options ,ust be passed in via the options object");
+    var opts = _Object$assign({
+      scopes: [],
+      fields: 'all',
+      size: 10000,
+      from: 0,
+      format: 'json'
+    }, options);
 
+    // check the args
     if (!q) return _Promise.reject("no query terms supplied");
-    if (!scopes || typeof scopes !== 'string' && !Array.isArray(scopes)) return _Promise.reject("no scopes fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  querymany(['rs58991260', 'rs2500'], 'dbsnp.rsid') ");
-    if (!fields || typeof fields !== 'string' && !Array.isArray(fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  querymany(['COSM1362966', 'COSM990046', 'COSM1392449'], 'cosmic.cosmic_id', 'cosmic') ");
+    if (!opts.scopes || typeof opts.scopes !== 'string' && !Array.isArray(opts.scopes)) return _Promise.reject("no scopes fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  querymany(['rs58991260', 'rs2500'], {scopes:'dbsnp.rsid'}) ");
+    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
+    if (!opts.size || typeof opts.size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
+    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
+    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
 
     var path = 'query/';
     var params = {};
@@ -545,23 +600,26 @@ exports['default'] = {
       params.query.q = q.join(',');
     }
 
-    if (scopes) {
-      if (typeof scopes === 'string') {
-        params.query.scopes = scopes;
+    if (opts.scopes) {
+      if (typeof opts.scopes === 'string') {
+        params.query.scopes = opts.scopes;
       }
-      if (Array.isArray(scopes)) {
-        params.query.scopes = scopes.join();
+      if (Array.isArray(opts.scopes)) {
+        params.query.scopes = opts.scopes.join();
       }
     }
 
-    if (fields) {
-      if (typeof fields === 'string') {
-        params.query.fields = fields;
+    if (opts.fields) {
+      if (typeof opts.fields === 'string') {
+        params.query.fields = opts.fields;
       }
-      if (Array.isArray(fields)) {
-        params.query.fields = fields.join();
+      if (Array.isArray(opts.fields)) {
+        params.query.fields = opts.fields.join();
       }
     }
+
+    params.query.size = opts.size;
+    params.query.from = opts.from;
 
     // this callback is fired off when the Post Promise is resolved
     function cb(resp) {
@@ -573,13 +631,14 @@ exports['default'] = {
               return new _Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
                 if (format !== 'json') {
-                  var opts = { CHECK_SCHEMA_DIFFERENCES: false, DELIMITER: { FIELD: ",", WRAP: '"' } };
-                  var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
-                  if (['tsv', 'table', 'flat'].includes(format)) opts.DELIMITER.FIELD = '\t';
-                  _json2Csv2['default'].json2csv(data, function (err, csv) {
-                    if (err) reject(err); //throw err;
+                  var _options2 = {};
+                  var data = !Array.isArray(resp.body.hits) ? [resp.body.hits] : resp.body.hits;
+                  if (['tsv', 'table', 'flat'].indexOf(opts.format) > -1) _options2.rowDelimiter = '\t';
+
+                  (0, _jsonexport2['default'])(data, _options2, function (err, csv) {
+                    if (err) return console.log(err);
                     resolve(csv);
-                  }, opts);
+                  });
                 } else {
                   resolve(resp.body);
                 }

@@ -43,7 +43,7 @@ test("get variant - pass single string arg for a variant id: chr9:g.107620835G>A
 
 
 test("get variant - for a given variant id, chr9:g.107620835G>A, only show the genename field under dbnsfp", (t) => {
-  let got = mv.getvariant('chr9:g.107620835G>A', 'dbnsfp.genename');   //Promised
+  let got = mv.getvariant('chr9:g.107620835G>A', {fields:'dbnsfp.genename'});   //Promised
 
   got
     .then(
@@ -64,7 +64,7 @@ test("get variant - for a given variant id, chr9:g.107620835G>A, only show the g
 
 
 test("get variant - pass incorrect formatted field list param when only showing the genename field under dbnsfp", (t) => {
-  let got =  mv.getvariant('chr9:g.107620835G>A', {fields:'dbnsfp.genename'});   //Promised
+  let got =  mv.getvariant('chr9:g.107620835G>A', 'dbnsfp.genename');   //Promised
 
   got
     .then(
@@ -82,7 +82,7 @@ test("get variant - pass incorrect formatted field list param when only showing 
 
 
 test("get variant - for a given variant id, chr9:g.107620835G>A, only show the dbnsfp.genename and cadd fields", (t) => {
-  let got = mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd']);   //Promised
+  let got = mv.getvariant('chr9:g.107620835G>A', {fields:['dbnsfp.genename', 'cadd']});   //Promised
 
   got
     .then(
@@ -103,7 +103,7 @@ test("get variant - for a given variant id, chr9:g.107620835G>A, only show the d
 
 
 test("get variant chr9:g.107620835G>A, only showing dbnsfp.genename and cadd.phred, in csv format", (t) => {
-  let got = mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 'csv');
+  let got = mv.getvariant('chr9:g.107620835G>A', {fields:['dbnsfp.genename', 'cadd.phred'], format:'csv'});
   got
     .then(
       function(res) {

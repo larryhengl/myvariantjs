@@ -4,7 +4,9 @@ import flat from 'flat';
 import mv from '../public/index';
 
 // getvariants --------------------------
-
+// TODO: add tests for...
+// size parameter
+// from parameter
 test("get variants - without args", (t) => {
   let got = mv.getvariants();   //Promised
 
@@ -43,7 +45,7 @@ test("get variants - pass single string arg for a variant id: chr9:g.107620835G>
 
 
 test("get variants - for a given variant id, chr9:g.107620835G>A, only show the genename field under dbnsfp", (t) => {
-  let got = mv.getvariants('chr9:g.107620835G>A', 'dbnsfp.genename');   //Promised
+  let got = mv.getvariants('chr9:g.107620835G>A', {fields:'dbnsfp.genename'});   //Promised
 
   got
     .then(
@@ -64,7 +66,7 @@ test("get variants - for a given variant id, chr9:g.107620835G>A, only show the 
 
 
 test("get variants - pass incorrect formatted field list param when only showing the genename field under dbnsfp", (t) => {
-  let got =  mv.getvariants('chr9:g.107620835G>A', {fields:'dbnsfp.genename'});   //Promised
+  let got =  mv.getvariants('chr9:g.107620835G>A', 'dbnsfp.genename');   //Promised
 
   got
     .then(
@@ -82,7 +84,7 @@ test("get variants - pass incorrect formatted field list param when only showing
 
 
 test("get variants - for chr9:g.107620835G>A, only fetch the dbnsfp.genename and cadd fields", (t) => {
-  let got = mv.getvariants('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd']);   //Promised
+  let got = mv.getvariants('chr9:g.107620835G>A', {fields:['dbnsfp.genename', 'cadd']});   //Promised
 
   got
     .then(
@@ -103,7 +105,8 @@ test("get variants - for chr9:g.107620835G>A, only fetch the dbnsfp.genename and
 
 
 test("get variants - for chr9:g.107620835G>A, only fetch dbnsfp.genename and cadd.phred, in csv format", (t) => {
-  let got = mv.getvariants('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 'csv');
+  let got = mv.getvariants('chr9:g.107620835G>A', {fields:['dbnsfp.genename', 'cadd.phred'], format:'csv'});
+
   got
     .then(
       function(res) {
@@ -167,7 +170,7 @@ test("get variants - pass incorrect formatted id list param when only showing th
 })
 
 test("get variants - pass incorrect formatted field list param when only showing the genename field under dbnsfp", (t) => {
-  let got =  mv.getvariants(['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], {fields:'dbnsfp.genename'});
+  let got =  mv.getvariants(['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], 'dbnsfp.genename');
 
   got
     .then(
@@ -184,7 +187,7 @@ test("get variants - pass incorrect formatted field list param when only showing
 })
 
 test("get variants - for a given array of variant ids, ['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], only show the genename field under dbnsfp", (t) => {
-  let got = mv.getvariants(['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], 'dbnsfp.genename');
+  let got = mv.getvariants(['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], {fields:'dbnsfp.genename'});
 
   got
     .then(
@@ -209,7 +212,7 @@ test("get variants - for a given array of variant ids, ['chr1:g.866422C>T', 'chr
 })
 
 test("get variants - for a given variant id, chr9:g.107620835G>A, only show the dbnsfp.genename and cadd fields", (t) => {
-  let got = mv.getvariants('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd']);   //Promised
+  let got = mv.getvariants('chr9:g.107620835G>A', {fields:['dbnsfp.genename', 'cadd']});   //Promised
 
   got
     .then(
@@ -229,7 +232,7 @@ test("get variants - for a given variant id, chr9:g.107620835G>A, only show the 
 })
 
 test("get variants - for a given array of variant ids, ['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], only show the genename field under dbnsfp", (t) => {
-  let got = mv.getvariants(['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], ['dbnsfp.genename', 'cadd']);
+  let got = mv.getvariants(['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], {fields:['dbnsfp.genename', 'cadd']});
 
   got
     .then(
@@ -260,14 +263,14 @@ test("get variants - for a given array of variant ids, ['chr1:g.866422C>T', 'chr
 
 
 test("get variants - for ['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], only showing dbnsfp.genename and cadd.phred, in csv format", (t) => {
-  let got = mv.getvariants(['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], ['dbnsfp.genename', 'cadd.phred'], 'csv');
+  let got = mv.getvariants(['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G>C'], {fields:['dbnsfp.genename', 'cadd.phred'], format:'csv'});
   got
     .then(
       function(res) {
         let opts = {"DELIMITER": {"FIELD": ",",WRAP: '"'}};
         converter.csv2json(res, (err,json) => {
           if (err) throw err;
-          let ids = json.map(r => r._id);
+          let ids = json.map(r => r._id.replace(',',''));
           let genes = json.filter( r => r.dbnsfp && r.dbnsfp.genename).map(r => r.dbnsfp.genename);
           let cadds = json.filter( r => r.cadd && r.cadd.phred).map(r => r.cadd.phred);
           let snpeffs = json.filter(r => r.snpeff);

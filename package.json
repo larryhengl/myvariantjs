@@ -58,7 +58,8 @@
   "dependencies": {
     "babel-runtime": "*",
     "flat": "^1.6.0",
-    "json-2-csv": "^1.4.0",
+    "json-2-csv": "^2.0.4",
+    "jsonexport": "^1.0.6",
     "markdox": "^0.1.9",
     "superagent": "^1.3.0"
   }

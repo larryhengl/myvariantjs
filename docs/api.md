@@ -49,7 +49,7 @@ Example calls:
 
 * **object** json
 
-## getvariant(vid, [fields], [format])
+## getvariant(vid, [fields], [size], [from], [format])
 
 ------------------------------------------------------------------
 ###  Return the variant object for the given HGVS-based variant id.
@@ -66,8 +66,8 @@ Example calls:
  mv.getvariant('chr9:g.107620835G>A', 'dbnsfp.genename')
  mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'])
  mv.getvariant('chr9:g.107620835G>A', 'all')
- mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], 'csv')
- mv.getvariant('chr9:g.107620835G>A', null, 'tsv')
+ mv.getvariant('chr9:g.107620835G>A', ['dbnsfp.genename', 'cadd.phred'], null, 0, 'csv')
+ mv.getvariant('chr9:g.107620835G>A', null, null, null, 'tsv')
 ```
 
 > *Notes*
@@ -77,17 +77,68 @@ Example calls:
 >> Field name supports dot notation for nested data structure as well,
 >> e.g. you can pass "dbnsfp.genename" or "cadd.phred".
 
+API Note: optional params are pased in via named options object
+
 ### Params:
 
 * **string** *vid* - variantid; hgvs-formatted variant id, e.g. chr9:g.107620835G>A
 * **string|array** *[fields]* - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
-* **string** *[format]* - convert json to given format. Supports json, csv, tsv, table (csv), flat. Default=json. Note: non-josn are flattened, and tsv=table=flat.
+* **number** *[size]* - boost the response size from the default 1000 given by the service api
+* **number** *[from]* - when paging use `from` as the row offset
+* **number** *[format]* - output formats: "json", "csv", "tsv", "table". Default = "json".
 
 ### Return:
 
 * **object** json
 
-## query(search, [fields], [size], [format])
+## getvariants(vids, [fields], [size], [from], [format])
+
+------------------------------------------------------------------
+### Make variant queries in batch for a list of HGVS name-based ids
+####  Return the list of variant annotation objects for the given list of hgvs-base variant ids.
+#### This is a wrapper for POST query of "/variant" service.
+
+Example endpoint:
+  POST
+  http://myvariant.info/v1/variant/
+   form-data: {ids="chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C",
+               fields="dbnsfp.genename,cadd.phred"}
+
+Example calls:
+```javascript
+ var mv = require('myvariantjs');
+ mv.getvariants("chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C")  // string of delimited ids
+ mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"])  // array of ids
+ mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "cadd.phred")
+ mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], "dbnsfp.genename", null, null, "csv")
+ mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], ["dbnsfp.genename", "cadd.phred"], 5000, null, "table")
+ mv.getvariants(["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"], ["dbnsfp.genename", "cadd.phred"], 10000, 0, "tsv")
+```
+
+> *Notes*
+>> The supported field names passed to the *fields* parameter can be found from
+>> any full variant object (without *fields*, or *fields="all"*).
+>
+>> Field name supports dot notation for nested data structure as well,
+>> e.g. you can pass "dbnsfp.genename" or "cadd.phred".
+>
+>> output formats "table" and "tsv" are the same.
+
+API Note: optional params are pased in via named options object
+
+### Params:
+
+* **string|array** *vids* - string of comma delimited hgvs-formatted variant ids, eg. "chr1:g.866422C>T,chr1:g.876664G>A,chr1:g.69635G>C", or array of ids, eg. ["chr1:g.866422C>T", "chr1:g.876664G>A","chr1:g.69635G>C"],
+* **string|array** *[fields]* - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
+* **number** *[size]* - boost the response size from the default 1000 given by the service api. Default = 10000.
+* **number** *[from]* - when paging use `from` as the row offset. Default = 0.
+* **number** *[format]* - output formats: "json", "csv", "tsv", "table". Default = "json".
+
+### Return:
+
+* **object|string** json or string
+
+## query(search, [fields], [size], [from], [format])
 
 ------------------------------------------------------------------
 ###  Return a variant query result.
@@ -102,9 +153,11 @@ Example endpoints:
 Example calls:
 ```javascript
  var mv = require('myvariantjs');
+ var mv = require('./public/index');
  mv.query("chr1:69000-70000", "cadd.phred")
  mv.query("dbsnp.rsid:rs58991260", "dbsnp")
  mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", "dbnsfp.polyphen2.hdiv")
+ mv.query("snpeff.ann.gene_name:naglu", ["snpeff.ann.gene_name","dbnsfp"], 10, null, "csv")
 ```
 
  **_note: The combination of “size” and “from” parameters can be used to get paging for large queries:_**
@@ -132,12 +185,44 @@ Example calls:
   q=dbnsfp.genename:CDK*
 ```
 
+API Note: optional params are pased in via named options object
+
 ### Params:
 
 * **string** *search* - case insensitive string to search.
 * **string|array** *[fields]* - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
 * **number** *[size]* - boost the response size from the default 1000 given by the service api
-* **number** *[format]* - output formats: "json", "csv", "tsv", "table". Default = "json".
+* **number** *[from]* - when paging use `from` as the row offset
+* **string** *[format]* - output formats: "json", "csv", "tsv", "table". Default = "json".
+
+### Return:
+
+* **object|string** json or string
+
+## querymany(q, [scopes], [fields], [size], [from], [format])
+
+------------------------------------------------------------------
+###  Return the batch query result.
+#### This is a wrapper for POST query of "/query" service.
+
+Example calls:
+```javascript
+ var mv = require('myvariantjs');
+ mv.querymany(['rs58991260', 'rs2500'], 'dbsnp.rsid')
+ mv.querymany(['RCV000083620', 'RCV000083611', 'RCV000083584'], 'clinvar.rcv_accession')
+ mv.querymany(['COSM1362966', 'COSM990046', 'COSM1392449'], ['dbsnp.rsid', 'cosmic.cosmic_id'], ['dbsnp','cosmic'])
+```
+
+API Note: optional params are pased in via named options object
+
+### Params:
+
+* **string** *q* - csv formatted search terms
+* **string|array** *[scopes]* - string or array of field names to scope the search to
+* **string|array** *[fields]* - fields to return, a list or a comma-separated string. If not provided or *fields="all"*, all available fields are returned. See [here](http://docs.myvariant.info/en/latest/doc/data.html#available-fields) for all available fields.
+* **number** *[size]* - boost the response size from the default 1000 given by the service api
+* **number** *[from]* - when paging use `from` as the row offset
+* **string** *[format]* - output formats: "json", "csv", "tsv", "table". Default = "json".
 
 ### Return:
 
