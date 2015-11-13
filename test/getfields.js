@@ -17,7 +17,6 @@ test("getfields without args", (t) => {
     .catch(
       // Rejected promise
       function(reason) {
-        //t.ok('Proper rejection is handled, with rejected promise: '+reason);
         t.fail('Proper rejection is handled, with rejected promise: '+reason);
         t.end()
       })
@@ -37,7 +36,6 @@ test("getfields with arg = cadd, gives one or many hits", (t) => {
     .catch(
       // Rejected promise
       function(reason) {
-        //t.ok('Proper rejection is handled, with rejected promise: '+reason);
         t.fail('Proper rejection is handled, with rejected promise: '+reason);
         t.end()
       })
@@ -77,7 +75,6 @@ test("getfields with arg = cadd.chrom, gives one hit", (t) => {
     .catch(
       // Rejected promise
       function(reason) {
-        //t.ok('Proper rejection is handled, with rejected promise: '+reason);
         t.fail('Proper rejection is handled, with rejected promise: '+reason);
         t.end()
       })
@@ -97,7 +94,6 @@ test("getfields with arg = nohits, gives no hits", (t) => {
     .catch(
       // Rejected promise
       function(reason) {
-        //t.ok('Proper rejection is handled, with rejected promise: '+reason);
         t.fail('Proper rejection is handled, with rejected promise: '+reason);
         t.end()
       })

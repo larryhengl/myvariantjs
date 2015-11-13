@@ -2,14 +2,11 @@ import test from 'tape';
 import converter from 'json-2-csv';
 import flat from 'flat';
 import mv from '../public/index';
-//import utils from '../dist/utils';
-//import mv from "myvariant";
 
 // query --------------------------
 
-/*
-test("get variants - without args", (t) => {
-  let got = mv.getvariants();   //Promised
+test("query - without args", (t) => {
+  let got = mv.query();   //Promised
 
   got
     .then(
@@ -25,6 +22,9 @@ test("get variants - without args", (t) => {
       })
 })
 
+
+
+/*
 
 test("get variants - pass single string arg for a variant id: chr9:g.107620835G>A", (t) => {
   let got = mv.getvariants('chr9:g.107620835G>A');   //Promised
@@ -294,7 +294,6 @@ test("get variants - for ['chr1:g.866422C>T', 'chr1:g.876664G>A', 'chr1:g.69635G
 })
 
 */
-
 
 
 

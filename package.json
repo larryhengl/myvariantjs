@@ -15,7 +15,7 @@
     "watch": "watch 'npm run build' src test",
     "test": "babel-tape-runner test/*.js | tspec",
     "prebuild": "npm run clean -s",
-    "build": "babel src -o public",
+    "build": "babel src -d public",
     "postbuild": "npm run test -s && npm run doc && npm run toc",
     "coverage": "babel-node node_modules/.bin/isparta cover test/*.js",
     "coveralls": "npm run coverage -s && coveralls < coverage/lcov.info",
