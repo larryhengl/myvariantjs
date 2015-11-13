@@ -1,16 +1,6 @@
 'use strict';
 
-var _regeneratorRuntime = require('babel-runtime/regenerator')['default'];
-
-var _Promise = require('babel-runtime/core-js/promise')['default'];
-
-var _Object$keys = require('babel-runtime/core-js/object/keys')['default'];
-
-var _Object$assign = require('babel-runtime/core-js/object/assign')['default'];
-
-var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
-
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
@@ -26,6 +16,12 @@ var _jsonexport = require('jsonexport');
 
 var _jsonexport2 = _interopRequireDefault(_jsonexport);
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
+require("babel-polyfill");
+
 /**
  * ------------------------------------------------------------------
  * ### Private fn to make the GET call.
@@ -36,26 +32,26 @@ var _jsonexport2 = _interopRequireDefault(_jsonexport);
  */
 function _get(params, cb) {
   var fetcher;
-  return _regeneratorRuntime.async(function _get$(context$1$0) {
-    while (1) switch (context$1$0.prev = context$1$0.next) {
+  return regeneratorRuntime.async(function _get$(_context) {
+    while (1) switch (_context.prev = _context.next) {
       case 0:
         fetcher = function fetcher() {
-          return new _Promise(function (resolve, reject) {
-            _superagent2['default'].get(params.url).query(params.query).end(function (error, resp) {
+          return new Promise(function (resolve, reject) {
+            _superagent2.default.get(params.url).query(params.query).end(function (error, resp) {
               error ? reject('error fetching from service: ' + error) : resolve(cb(resp));
             });
           });
         };
 
-        context$1$0.next = 3;
-        return _regeneratorRuntime.awrap(fetcher());
+        _context.next = 3;
+        return regeneratorRuntime.awrap(fetcher());
 
       case 3:
-        return context$1$0.abrupt('return', context$1$0.sent);
+        return _context.abrupt('return', _context.sent);
 
       case 4:
       case 'end':
-        return context$1$0.stop();
+        return _context.stop();
     }
   }, null, this);
 };
@@ -70,33 +66,64 @@ function _get(params, cb) {
  */
 function _post(params, cb) {
   var fetcher;
-  return _regeneratorRuntime.async(function _post$(context$1$0) {
-    while (1) switch (context$1$0.prev = context$1$0.next) {
+  return regeneratorRuntime.async(function _post$(_context2) {
+    while (1) switch (_context2.prev = _context2.next) {
       case 0:
         fetcher = function fetcher() {
-          return new _Promise(function (resolve, reject) {
-            _superagent2['default'].post(params.url).type('form').send(params.query).end(function (error, resp) {
+          return new Promise(function (resolve, reject) {
+            _superagent2.default.post(params.url).type('form').send(params.query).end(function (error, resp) {
               error ? reject('error fetching from service: ' + error) : resolve(cb(resp));
             });
           });
         };
 
-        context$1$0.next = 3;
-        return _regeneratorRuntime.awrap(fetcher());
+        _context2.next = 3;
+        return regeneratorRuntime.awrap(fetcher());
 
       case 3:
-        return context$1$0.abrupt('return', context$1$0.sent);
+        return _context2.abrupt('return', _context2.sent);
 
       case 4:
       case 'end':
-        return context$1$0.stop();
+        return _context2.stop();
     }
   }, null, this);
 };
 
-exports['default'] = {
+exports.default = {
   url: 'http://myvariant.info/v1/',
   validFormats: ['json', 'csv', 'tsv', 'table', 'flat'],
+
+  /**
+   * ------------------------------------------------------------------
+   * ###  By-pass specifiying input and output from a UI, passing in a fully valid service GET url.
+   *
+   *
+   * Example calls:
+   * ```javascript
+   *  var mv = require('myvariantjs');
+   *  mv.passthru('http://myvariant.info/v1/variant/chr17:g.40690453T>G?fields=cadd')
+   * ```
+   *
+   *
+   * @name passthru
+   * @param {string} url - fully valid url for a GET service call.
+   * @return {object} json
+   * @api public
+   */
+  passthru: function passthru(url) {
+    if (!url || url.indexOf(this.url) === -1) return "invalid url";
+
+    var params = {};
+    params.url = url;
+
+    // this callback is fired off when the Promise is resolved
+    var cb = function cb(resp) {
+      return resp.body;
+    };
+
+    return _get(params, cb);
+  },
 
   /**
    * ------------------------------------------------------------------
@@ -123,7 +150,7 @@ exports['default'] = {
 
     // this callback is fired off when the Promise is resolved
     var cb = function cb(resp) {
-      var keyz = _Object$keys(resp.body);
+      var keyz = Object.keys(resp.body);
       if (search && keyz.length) {
         var _ret = (function () {
           var srch = search.toLowerCase();
@@ -138,7 +165,7 @@ exports['default'] = {
           };
         })();
 
-        if (typeof _ret === 'object') return _ret.v;
+        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
       } else {
         return resp.body;
       }
@@ -189,8 +216,8 @@ exports['default'] = {
    *
    */
   getvariant: function getvariant(vid, options) {
-    if (options && typeof options !== 'object') return _Promise.reject("options ,ust be passed in via the options object");
-    var opts = _Object$assign({
+    if (options && (typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') return Promise.reject("options ,ust be passed in via the options object");
+    var opts = Object.assign({
       fields: 'all',
       size: 10000,
       from: 0,
@@ -198,11 +225,11 @@ exports['default'] = {
     }, options);
 
     // check args
-    if (!vid) return _Promise.reject("no variant id supplied");
-    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
-    if (!opts.size || typeof opts.size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
-    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
-    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
+    if (!vid) return Promise.reject("no variant id supplied");
+    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
+    if (!opts.size || typeof opts.size !== 'number') return Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
+    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
+    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
 
     var path = 'variant/' + vid;
     var flds = undefined;
@@ -227,18 +254,18 @@ exports['default'] = {
     // this callback is fired off when the Get Promise is resolved
     function cb(resp) {
       var convert;
-      return _regeneratorRuntime.async(function cb$(context$2$0) {
-        while (1) switch (context$2$0.prev = context$2$0.next) {
+      return regeneratorRuntime.async(function cb$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
           case 0:
             convert = function convert() {
-              return new _Promise(function (resolve, reject) {
+              return new Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
                 if (opts.format !== 'json') {
                   var _options = {};
                   var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
                   if (['tsv', 'table', 'flat'].indexOf(opts.format) > -1) _options.rowDelimiter = '\t';
 
-                  (0, _jsonexport2['default'])(data, _options, function (err, csv) {
+                  (0, _jsonexport2.default)(data, _options, function (err, csv) {
                     if (err) return console.log(err);
                     resolve(csv);
                   });
@@ -248,15 +275,15 @@ exports['default'] = {
               });
             };
 
-            context$2$0.next = 3;
-            return _regeneratorRuntime.awrap(convert());
+            _context3.next = 3;
+            return regeneratorRuntime.awrap(convert());
 
           case 3:
-            return context$2$0.abrupt('return', context$2$0.sent);
+            return _context3.abrupt('return', _context3.sent);
 
           case 4:
           case 'end':
-            return context$2$0.stop();
+            return _context3.stop();
         }
       }, null, this);
     };
@@ -311,8 +338,8 @@ exports['default'] = {
    *
    */
   getvariants: function getvariants(vids, options) {
-    if (options && typeof options !== 'object') return _Promise.reject("options must be passed in via the options object");
-    var opts = _Object$assign({
+    if (options && (typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') return Promise.reject("options must be passed in via the options object");
+    var opts = Object.assign({
       fields: 'all',
       size: 10000,
       from: 0,
@@ -325,11 +352,11 @@ exports['default'] = {
     params.query = {};
 
     // check the args
-    if (!vids) return _Promise.reject("no variant ids supplied");
-    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
-    if (!opts.size || typeof opts.size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
-    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
-    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
+    if (!vids) return Promise.reject("no variant ids supplied");
+    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
+    if (!opts.size || typeof opts.size !== 'number') return Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
+    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
+    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
 
     if (typeof vids === "string") {
       var arrVids = vids.split(',');
@@ -341,7 +368,7 @@ exports['default'] = {
       }
     } else if (!Array.isArray(vids)) {
       // for now, barf at objects
-      return _Promise.reject("error, wrong param type");
+      return Promise.reject("error, wrong param type");
     } else if (Array.isArray(vids)) {
       params.query.ids = vids.join(',');
     }
@@ -362,18 +389,18 @@ exports['default'] = {
     // this callback is fired off when the Post Promise is resolved
     function cb(resp) {
       var convert;
-      return _regeneratorRuntime.async(function cb$(context$2$0) {
-        while (1) switch (context$2$0.prev = context$2$0.next) {
+      return regeneratorRuntime.async(function cb$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
           case 0:
             convert = function convert() {
-              return new _Promise(function (resolve, reject) {
+              return new Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
                 if (opts.format !== 'json') {
                   var opters = {};
                   var data = !Array.isArray(resp.body) ? [resp.body] : resp.body;
                   if (['tsv', 'table', 'flat'].indexOf(opts.format) > -1) opters.rowDelimiter = '\t';
 
-                  (0, _jsonexport2['default'])(data, opters, function (err, csv) {
+                  (0, _jsonexport2.default)(data, opters, function (err, csv) {
                     if (err) return console.log(err);
                     resolve(csv);
                   });
@@ -383,15 +410,15 @@ exports['default'] = {
               });
             };
 
-            context$2$0.next = 3;
-            return _regeneratorRuntime.awrap(convert());
+            _context4.next = 3;
+            return regeneratorRuntime.awrap(convert());
 
           case 3:
-            return context$2$0.abrupt('return', context$2$0.sent);
+            return _context4.abrupt('return', _context4.sent);
 
           case 4:
           case 'end':
-            return context$2$0.stop();
+            return _context4.stop();
         }
       }, null, this);
     };
@@ -460,8 +487,8 @@ exports['default'] = {
    * ---
    */
   query: function query(_query, options) {
-    if (options && typeof options !== 'object') return _Promise.reject("options ,ust be passed in via the options object");
-    var opts = _Object$assign({
+    if (options && (typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') return Promise.reject("options must be passed in via the options object");
+    var opts = Object.assign({
       fields: 'all',
       size: 10000,
       from: 0,
@@ -469,11 +496,11 @@ exports['default'] = {
     }, options);
 
     // check the args
-    if (!_query) return _Promise.reject("no query terms supplied");
-    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
-    if (!opts.size || typeof opts.size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
-    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
-    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
+    if (!_query) return Promise.reject("no query terms supplied");
+    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
+    if (!opts.size || typeof opts.size !== 'number') return Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
+    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
+    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
 
     var flds = undefined;
     var q = {};
@@ -482,17 +509,17 @@ exports['default'] = {
     q.q = _query;
 
     // set the fields param
-    if (fields) {
-      if (typeof fields === 'string') {
-        q.fields = fields;
+    if (opts.fields) {
+      if (typeof opts.fields === 'string') {
+        q.fields = opts.fields;
       }
-      if (Array.isArray(fields)) {
-        q.fields = fields.join();
+      if (Array.isArray(opts.fields)) {
+        q.fields = opts.fields.join();
       }
     }
 
-    q.size = isize;
-    q.from = ifrom;
+    q.size = opts.size;
+    q.from = opts.from;
 
     // make get call to the request url for the given query id, adding fields param if user supplied
     var path = 'query';
@@ -503,18 +530,18 @@ exports['default'] = {
     // this callback is fired off when the Get Promise is resolved
     function cb(resp) {
       var convert;
-      return _regeneratorRuntime.async(function cb$(context$2$0) {
-        while (1) switch (context$2$0.prev = context$2$0.next) {
+      return regeneratorRuntime.async(function cb$(_context5) {
+        while (1) switch (_context5.prev = _context5.next) {
           case 0:
             convert = function convert() {
-              return new _Promise(function (resolve, reject) {
+              return new Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
-                if (format !== 'json') {
-                  var _opts = {};
+                if (opts.format !== 'json') {
+                  var _options2 = {};
                   var data = !Array.isArray(resp.body.hits) ? [resp.body.hits] : resp.body.hits;
-                  if (['tsv', 'table', 'flat'].indexOf(format) > -1) _opts.rowDelimiter = '\t';
+                  if (['tsv', 'table', 'flat'].indexOf(opts.format) > -1) _options2.rowDelimiter = '\t';
 
-                  (0, _jsonexport2['default'])(data, _opts, function (err, csv) {
+                  (0, _jsonexport2.default)(data, _options2, function (err, csv) {
                     if (err) return console.log(err);
                     resolve(csv);
                   });
@@ -524,15 +551,15 @@ exports['default'] = {
               });
             };
 
-            context$2$0.next = 3;
-            return _regeneratorRuntime.awrap(convert());
+            _context5.next = 3;
+            return regeneratorRuntime.awrap(convert());
 
           case 3:
-            return context$2$0.abrupt('return', context$2$0.sent);
+            return _context5.abrupt('return', _context5.sent);
 
           case 4:
           case 'end':
-            return context$2$0.stop();
+            return _context5.stop();
         }
       }, null, this);
     };
@@ -569,8 +596,8 @@ exports['default'] = {
    *
    */
   querymany: function querymany(q, options) {
-    if (options && typeof options !== 'object') return _Promise.reject("options ,ust be passed in via the options object");
-    var opts = _Object$assign({
+    if (options && (typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') return Promise.reject("options ,ust be passed in via the options object");
+    var opts = Object.assign({
       scopes: [],
       fields: 'all',
       size: 10000,
@@ -579,12 +606,12 @@ exports['default'] = {
     }, options);
 
     // check the args
-    if (!q) return _Promise.reject("no query terms supplied");
-    if (!opts.scopes || typeof opts.scopes !== 'string' && !Array.isArray(opts.scopes)) return _Promise.reject("no scopes fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  querymany(['rs58991260', 'rs2500'], {scopes:'dbsnp.rsid'}) ");
-    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return _Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
-    if (!opts.size || typeof opts.size !== 'number') return _Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
-    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return _Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
-    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return _Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
+    if (!q) return Promise.reject("no query terms supplied");
+    if (!opts.scopes || typeof opts.scopes !== 'string' && !Array.isArray(opts.scopes)) return Promise.reject("no scopes fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  querymany(['rs58991260', 'rs2500'], {scopes:'dbsnp.rsid'}) ");
+    if (!opts.fields || typeof opts.fields !== 'string' && !Array.isArray(opts.fields)) return Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
+    if (!opts.size || typeof opts.size !== 'number') return Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
+    if (typeof opts.from === "undefined" || typeof opts.from !== 'number') return Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
+    if (!opts.format || ['json', 'csv', 'tsv', 'table', 'flat'].indexOf(opts.format) === -1) return Promise.reject("no format supplied or defined by default. likely due to incorrect parameter value. try a signature like:   query('chr1:69000-70000', {format: 'json'}) ");
 
     var path = 'query/';
     var params = {};
@@ -595,7 +622,7 @@ exports['default'] = {
       params.query.q = q;
     } else if (!Array.isArray(q)) {
       // for now, barf at objects
-      return _Promise.reject("error, wrong param type");
+      return Promise.reject("error, wrong param type");
     } else if (Array.isArray(q)) {
       params.query.q = q.join(',');
     }
@@ -624,18 +651,18 @@ exports['default'] = {
     // this callback is fired off when the Post Promise is resolved
     function cb(resp) {
       var convert;
-      return _regeneratorRuntime.async(function cb$(context$2$0) {
-        while (1) switch (context$2$0.prev = context$2$0.next) {
+      return regeneratorRuntime.async(function cb$(_context6) {
+        while (1) switch (_context6.prev = _context6.next) {
           case 0:
             convert = function convert() {
-              return new _Promise(function (resolve, reject) {
+              return new Promise(function (resolve, reject) {
                 // check for format type. if != json (the default) then convert accordingly
                 if (format !== 'json') {
-                  var _options2 = {};
+                  var _options3 = {};
                   var data = !Array.isArray(resp.body.hits) ? [resp.body.hits] : resp.body.hits;
-                  if (['tsv', 'table', 'flat'].indexOf(opts.format) > -1) _options2.rowDelimiter = '\t';
+                  if (['tsv', 'table', 'flat'].indexOf(opts.format) > -1) _options3.rowDelimiter = '\t';
 
-                  (0, _jsonexport2['default'])(data, _options2, function (err, csv) {
+                  (0, _jsonexport2.default)(data, _options3, function (err, csv) {
                     if (err) return console.log(err);
                     resolve(csv);
                   });
@@ -645,21 +672,19 @@ exports['default'] = {
               });
             };
 
-            context$2$0.next = 3;
-            return _regeneratorRuntime.awrap(convert());
+            _context6.next = 3;
+            return regeneratorRuntime.awrap(convert());
 
           case 3:
-            return context$2$0.abrupt('return', context$2$0.sent);
+            return _context6.abrupt('return', _context6.sent);
 
           case 4:
           case 'end':
-            return context$2$0.stop();
+            return _context6.stop();
         }
       }, null, this);
     };
 
     return _post(params, cb);
   }
-
 };
-module.exports = exports['default'];

@@ -1,3 +1,4 @@
+require("babel-polyfill");
 import superagent from 'superagent';
 import flat from 'flat';
 import jsonexport from 'jsonexport';
@@ -52,6 +53,38 @@ async function _post(params,cb) {
 export default {
   url: 'http://myvariant.info/v1/',
   validFormats: ['json','csv','tsv','table','flat'],
+
+/**
+ * ------------------------------------------------------------------
+ * ###  By-pass specifiying input and output from a UI, passing in a fully valid service GET url.
+ *
+ *
+ * Example calls:
+ * ```javascript
+ *  var mv = require('myvariantjs');
+ *  mv.passthru('http://myvariant.info/v1/variant/chr17:g.40690453T>G?fields=cadd')
+ * ```
+ *
+ *
+ * @name passthru
+ * @param {string} url - fully valid url for a GET service call.
+ * @return {object} json
+ * @api public
+ */
+  passthru(url) {
+    if (!url || url.indexOf(this.url) === -1) return "invalid url";
+
+    let params = {};
+    params.url = url;
+
+    // this callback is fired off when the Promise is resolved
+    let cb = (resp) => {
+        return resp.body;
+    };
+
+    return _get(params,cb);
+  },
+
 
 /**
  * ------------------------------------------------------------------
@@ -383,7 +416,7 @@ export default {
  * ---
  */
   query(query, options) {
-    if (options && typeof options !== 'object') return Promise.reject("options ,ust be passed in via the options object");
+    if (options && typeof options !== 'object') return Promise.reject("options must be passed in via the options object");
     let opts = Object.assign({
       fields:'all',
       size: 10000,
@@ -405,17 +438,17 @@ export default {
     q.q = query;
 
     // set the fields param
-    if (fields) {
-      if (typeof fields === 'string') {
-        q.fields = fields;
+    if (opts.fields) {
+      if (typeof opts.fields === 'string') {
+        q.fields = opts.fields;
       }
-      if (Array.isArray(fields)) {
-        q.fields = fields.join();
+      if (Array.isArray(opts.fields)) {
+        q.fields = opts.fields.join();
       }
     }
 
-    q.size = isize;
-    q.from = ifrom;
+    q.size = opts.size;
+    q.from = opts.from;
 
     // make get call to the request url for the given query id, adding fields param if user supplied
     const path = 'query';
@@ -428,12 +461,12 @@ export default {
       const convert = () => {
         return new Promise((resolve,reject) => {
           // check for format type. if != json (the default) then convert accordingly
-          if (format !== 'json') {
-            let opts = {};
+          if (opts.format !== 'json') {
+            let options = {};
             let data = !Array.isArray(resp.body.hits) ? [resp.body.hits] : resp.body.hits;
-            if (['tsv','table','flat'].indexOf(format)>-1) opts.rowDelimiter = '\t';
+            if (['tsv','table','flat'].indexOf(opts.format)>-1) options.rowDelimiter = '\t';
 
-            jsonexport(data, opts, function(err, csv){
+            jsonexport(data, options, function(err, csv){
                 if(err) return console.log(err);
                 resolve(csv);
             });

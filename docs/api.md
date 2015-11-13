@@ -28,6 +28,25 @@
 
 * **object** json
 
+## passthru(url)
+
+------------------------------------------------------------------
+###  By-pass specifiying input and output from a UI, passing in a fully valid service GET url.
+
+Example calls:
+```javascript
+ var mv = require('myvariantjs');
+ mv.passthru('http://myvariant.info/v1/variant/chr17:g.40690453T>G?fields=cadd')
+```
+
+### Params:
+
+* **string** *url* - fully valid url for a GET service call.
+
+### Return:
+
+* **object** json
+
 ## getfields([search])
 
 ------------------------------------------------------------------
