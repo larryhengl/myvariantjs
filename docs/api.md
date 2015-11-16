@@ -173,10 +173,10 @@ Example calls:
 ```javascript
  var mv = require('myvariantjs');
  var mv = require('./public/index');
- mv.query("chr1:69000-70000", "cadd.phred")
- mv.query("dbsnp.rsid:rs58991260", "dbsnp")
- mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", "dbnsfp.polyphen2.hdiv")
- mv.query("snpeff.ann.gene_name:naglu", ["snpeff.ann.gene_name","dbnsfp"], 10, null, "csv")
+ mv.query("chr1:69000-70000", {fields:'dbnsfp.genename'})
+ mv.query("dbsnp.rsid:rs58991260", {fields:'dbnsfp'})
+ mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", , {fields:'dbnsfp.polyphen2.hdiv'})
+ mv.query("snpeff.ann.gene_name:naglu", {fields:["snpeff.ann.gene_name","dbnsfp"], size:10, format:"csv"})
 ```
 
  **_note: The combination of “size” and “from” parameters can be used to get paging for large queries:_**

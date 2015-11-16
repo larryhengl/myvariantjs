@@ -372,10 +372,10 @@ export default {
  * ```javascript
  *  var mv = require('myvariantjs');
  *  var mv = require('./public/index');
- *  mv.query("chr1:69000-70000", "cadd.phred")
- *  mv.query("dbsnp.rsid:rs58991260", "dbsnp")
- *  mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", "dbnsfp.polyphen2.hdiv")
- *  mv.query("snpeff.ann.gene_name:naglu", ["snpeff.ann.gene_name","dbnsfp"], 10, null, "csv")
+ *  mv.query("chr1:69000-70000", {fields:'dbnsfp.genename'})
+ *  mv.query("dbsnp.rsid:rs58991260", {fields:'dbnsfp'})
+ *  mv.query("snpeff.ann.gene_name:cdk2 AND dbnsfp.polyphen2.hdiv.pred:D", , {fields:'dbnsfp.polyphen2.hdiv'})
+ *  mv.query("snpeff.ann.gene_name:naglu", {fields:["snpeff.ann.gene_name","dbnsfp"], size:10, format:"csv"})
  * ```
  *
  *  **_note: The combination of “size” and “from” parameters can be used to get paging for large queries:_**
@@ -416,6 +416,8 @@ export default {
  * ---
  */
   query(query, options) {
+    if (!query) return Promise.reject("no query terms supplied");
+    if (typeof query !== 'string') return Promise.reject("query terms should be string formatted");
     if (options && typeof options !== 'object') return Promise.reject("options must be passed in via the options object");
     let opts = Object.assign({
       fields:'all',
@@ -424,8 +426,7 @@ export default {
       format: 'json'
     }, options);
 
-    // check the args
-    if (!query) return Promise.reject("no query terms supplied");
+    // check the opts args
     if (!opts.fields || (typeof opts.fields !== 'string' && !Array.isArray(opts.fields))) return Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
     if (!opts.size || (typeof opts.size !== 'number')) return Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
     if (typeof opts.from === "undefined" || (typeof opts.from !== 'number')) return Promise.reject("no `from` parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {from: 5}) ");
@@ -512,8 +513,9 @@ export default {
  * ---
  *
  */
-  querymany(q, options) {
-    if (options && typeof options !== 'object') return Promise.reject("options ,ust be passed in via the options object");
+  querymany(query, options) {
+    if (!query) return Promise.reject("no query terms supplied");
+    if (options && typeof options !== 'object') return Promise.reject("options must be passed in via the options object");
     let opts = Object.assign({
       scopes: [],
       fields:'all',
@@ -522,8 +524,7 @@ export default {
       format: 'json'
     }, options);
 
-    // check the args
-    if (!q) return Promise.reject("no query terms supplied");
+    // check the opts args
     if (!opts.scopes || (typeof opts.scopes !== 'string' && !Array.isArray(opts.scopes))) return Promise.reject("no scopes fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  querymany(['rs58991260', 'rs2500'], {scopes:'dbsnp.rsid'}) ");
     if (!opts.fields || (typeof opts.fields !== 'string' && !Array.isArray(opts.fields))) return Promise.reject("no fields supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {fields:'dbnsfp.genename'}) ");
     if (!opts.size || (typeof opts.size !== 'number')) return Promise.reject("no size parameter supplied or defined by default. likely due to incorrect parameter value. try a signature like:  query('chr1:69000-70000', {size: 100}) ");
@@ -535,13 +536,13 @@ export default {
     params.url = this.url + path;
     params.query = {};
 
-    if (typeof q === "string") {
-      params.query.q = q;
-    } else if (!Array.isArray(q)) {
+    if (typeof query === "string") {
+      params.query.q = query;
+    } else if (!Array.isArray(query)) {
       // for now, barf at objects
       return Promise.reject("error, wrong param type");
-    } else if (Array.isArray(q)) {
-      params.query.q = q.join(',');
+    } else if (Array.isArray(query)) {
+      params.query.q = query.join(',');
     }
 
     if (opts.scopes) {

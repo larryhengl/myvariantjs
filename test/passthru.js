@@ -4,7 +4,7 @@ import mv from "../public/index";
 // utils --------------------------
 
 function isSet (fn) {
-    var value;
+    let value;
     try {
         value = fn();
     } catch (e) {

@@ -6,8 +6,7 @@
 [![Node version][node-image]][node-url]
 [![Build Status](https://travis-ci.org/larryhengl/myvariantjs.svg?branch=master)](https://travis-ci.org/larryhengl/myvariantjs)
 [![Coverage Status](https://coveralls.io/repos/larryhengl/myvariantjs/badge.svg?branch=master&service=github)](https://coveralls.io/github/larryhengl/myvariantjs?branch=master)
-[![NPM Downloads][download-badge]][https://img.shields.io/npm/dt/myvariantjs.svg]
-![myvariant-badge][myvariant]
+![myvariant-badge][myvariantjs]
 
 
 <br>
@@ -51,55 +50,22 @@ npm install myvariantjs --save
 Also see the [API section](#api-sec) below.
 
 ```javascript
-
-var mv = require("myvariant")
-
-mv.getvariant("chr7:g.140453134T>C")
-
-  // output below is collapsed
-  {"_id": "chr7:g.140453134T>C",
-   "_version": 1,
-   "cadd": {...},
-   "cosmic": {...},
-   "dbnsfp": {...},
-   "dbsnp": {...},
-   "docm": {...},
-   "mutdb": {...},
-   "snpeff": {...},
-   "vcf": {
-      "alt": "C",
-      "position": "140453134",
-      "ref": "T"
-   }}
-
-
-mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
-
-    {"_id": "chr7:g.140453134T>C",
-     "_version": 1,
-     "snpeff": {"ann": {"transcript_biotype": "Coding",
-       "gene_id": "BRAF",
-       "effect": "missense_variant",
-       "putative_impact": "MODERATE",
-       "cds": {"length": "2301", "position": "1801"},
-       "feature_type": "transcript",
-       "gene_name": "BRAF",
-       "feature_id": "NM_004333.4",
-       "hgvs_p": "p.Lys601Glu",
-       "hgvs_c": "c.1801A>G",
-       "rank": "15",
-       "total": "18",
-       "protein": {"length": "766", "position": "601"},
-       "cdna": {"length": "2946", "position": "1862"}}},
-     "cosmic": {"mut_freq": 0.07,
-      "alt": "G",
-      "mut_nt": "A>G",
-      "tumor_site": "upper_aerodigestive_tract",
-      "ref": "A",
-      "chrom": "7",
-      "hg19": {"start": 140453134, "end": 140453134},
-      "cosmic_id": "COSM478"}
-     }
+$ node
+> let mv = require('myvariantjs').default
+> mv
+{ url: 'http://myvariant.info/v1/',
+  validFormats: [ 'json', 'csv', 'tsv', 'table', 'flat' ],
+  passthru: [Function: passthru],
+  getfields: [Function: getfields],
+  getvariant: [Function: getvariant],
+  getvariants: [Function: getvariants],
+  query: [Function: query],
+  querymany: [Function: querymany] }
+> let got = mv.getvariant('chr9:g.107620835G>A', {fields:'dbnsfp.genename'});   //Promised
+> got.then(function(res) { console.log(res) })
+> { _id: 'chr9:g.107620835G>A',
+  _version: 1,
+  dbnsfp: { genename: 'ABCA1' } }
 ```
 
 <br>
@@ -122,13 +88,18 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 
 <br>
 ## Todo
-+ add more queries
++ add tests for querymany
++ add fetchall
++ add facets ?
++ add sorting
++ add 'Feelin Lucky' search => full text search, needs backend support or full query parsing
 
 
 <br>
 ## Release History
 
-* 0.1.0  - _Initial release_
+* 1.0.0  - _Initial release_
+* 1.0.1  - Add tests for query()
 
 
 ## Contact
@@ -137,14 +108,11 @@ mv.getvariant("chr7:g.140453134T>C", "cosmic,snpeff")
 <br>
 [![MIT license][license]](http://opensource.org/licenses/MIT) © [Larry Hengl](http://github.com/larryhengl)
 
-
 [license]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
 
-[version]: https://img.shields.io/badge/style-0.1.0-blue.svg?style=flat-square&label=release
+[version]: https://img.shields.io/badge/style-1.0.1-blue.svg?style=flat-square&label=release
 
-[myvariant]: https://img.shields.io/badge/style-happy-green.svg?style=flat-square&label=myvariant
+[myvariantjs]: https://img.shields.io/badge/style-happy-green.svg?style=flat-square&label=myvariantjs
 
 [node-url]: https://nodejs.org/en/
-[node-image]: http://img.shields.io/node/v/latest-version.svg?style=flat-square
-
-[download-badge]: http://img.shields.io/npm/dm/example.svg?style=flat-square
+[node-image]: https://img.shields.io/badge/node-4.1.x-brightgreen.svg
