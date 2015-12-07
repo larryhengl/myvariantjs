@@ -1,6 +1,6 @@
 {
   "name": "myvariantjs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "JS client for MyVariant.info web services",
   "main": "public/index.js",
   "files": [
