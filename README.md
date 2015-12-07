@@ -9,7 +9,6 @@
 ![myvariant-badge][myvariantjs]
 
 
-<br>
 <table style="border:none;">
   <tr style="border:none;">
     <td style="border:none;">
@@ -21,14 +20,15 @@
 </table>
 
 
-<br>
+
 ## Demo App
 
 You can view a basic web app [demo](http://larryhengl.github.io/myvariantjs-demo/) which uses the myvariantjs lib.
 
 You can also clone and start the demo app locally.  Repo is [here](https://github.com/larryhengl/myvariantjs-demo).
 
-<br>
+_ Developed enterly in Chrome.  Mileage may vary in other untested browsers right now (sorry 'bout that, not enough hours in my day). _
+
 ## Intro
 
 [MyVariant.Info](http://myvariant.info) provides simple-to-use REST web services to query/retrieve genetic variant annotation data. It is designed for simplicity and performance.
@@ -38,14 +38,14 @@ You can also clone and start the demo app locally.  Repo is [here](https://githu
 > There is also a similarly designed python client called [**myvariant.py**](https://github.com/Network-of-BioThings/myvariant.py), if python is your thing.
 
 
-<br>
+
 ## Installation
 
 ```
 npm install myvariantjs --save
 ```
 
-<br>
+
 ## Usage
 Also see the [API section](#api-sec) below.
 
@@ -68,25 +68,25 @@ $ node
   dbnsfp: { genename: 'ABCA1' } }
 ```
 
-<br>
+
 ## API <a id="api-sec"></a>
 
 [api and usage docs](docs/api.md)
 
-<br>
+
 ## Testing
 
 ```npm test```
 > not browserified.
 
-<br>
+
 ## Build Docs
 
 ```npm run doc```
 > optional.  you can view the docs in the docs folder or on github.
 
 
-<br>
+
 ## Todo
 + add tests for querymany
 + add fetchall
@@ -95,7 +95,7 @@ $ node
 + add 'Feelin Lucky' search => full text search, needs backend support or full query parsing
 
 
-<br>
+
 ## Release History
 
 * 1.0.0  - _Initial release_
@@ -105,14 +105,10 @@ $ node
 ## Contact
 [@larryhengl](https://twitter.com/LarryHengl)
 
-<br>
+
 [![MIT license][license]](http://opensource.org/licenses/MIT) © [Larry Hengl](http://github.com/larryhengl)
-
 [license]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
-
 [version]: https://img.shields.io/badge/style-1.0.1-blue.svg?style=flat-square&label=release
-
 [myvariantjs]: https://img.shields.io/badge/style-happy-green.svg?style=flat-square&label=myvariantjs
-
 [node-url]: https://nodejs.org/en/
 [node-image]: https://img.shields.io/badge/node-4.1.x-brightgreen.svg
