@@ -27,7 +27,7 @@ You can view a basic web app [demo](http://larryhengl.github.io/myvariantjs-demo
 
 You can also clone and start the demo app locally.  Repo is [here](https://github.com/larryhengl/myvariantjs-demo).
 
-_ Developed enterly in Chrome.  Mileage may vary in other untested browsers right now (sorry 'bout that, not enough hours in my day). _
+> Developed enterly in Chrome.  Mileage may vary in other untested browsers right now (sorry 'bout that, not enough hours in my day).
 
 ## Intro
 
@@ -100,6 +100,7 @@ $ node
 
 * 1.0.0  - _Initial release_
 * 1.0.1  - Add tests for query()
+* 1.0.2  - api doc touchups
 
 
 ## Contact
@@ -107,8 +108,13 @@ $ node
 
 
 [![MIT license][license]](http://opensource.org/licenses/MIT) © [Larry Hengl](http://github.com/larryhengl)
+
 [license]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
+
 [version]: https://img.shields.io/badge/style-1.0.1-blue.svg?style=flat-square&label=release
+
 [myvariantjs]: https://img.shields.io/badge/style-happy-green.svg?style=flat-square&label=myvariantjs
+
 [node-url]: https://nodejs.org/en/
+
 [node-image]: https://img.shields.io/badge/node-4.1.x-brightgreen.svg
